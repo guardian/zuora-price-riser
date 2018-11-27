@@ -1,4 +1,4 @@
-package example
+package com.gu
 
 import java.io.File
 import java.time.LocalDate
@@ -75,7 +75,7 @@ object LocalDateSerializer extends CustomSerializer[LocalDate](format => ({
 }
 ))
 
-object Hello extends Greeting with App {
+object Main extends Greeting with App {
   // JSON
   implicit val codec = DefaultFormats ++ List(LocalDateSerializer)
   val string =
@@ -176,7 +176,7 @@ object Hello extends Greeting with App {
   - if status == 'Active'
   - if targetPrice >= default product rate plan charge price
   - if deliveryRegion == currency
-  -
+  - if given priceRiseDate makes sense (is one day after invoice period end date)
    */
 
 }
