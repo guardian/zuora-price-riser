@@ -11,9 +11,16 @@ lazy val root = (project in file(".")).
     libraryDependencies ++= Seq(
       scalaTest % Test,
       csvJava,
-      csvGeneric, 
-      scalajHttp, 
-      json4sNative, 
-      jason4sExt, 
+      csvGeneric,
+      scalajHttp,
+      json4sNative,
+      jason4sExt,
+      typesafeConfig,
+    ),
+    scalacOptions ++= Seq(
+      "-Xfatal-warnings",  // New lines for each options
+      "-deprecation",
+      "-feature",
+      "-language:implicitConversions",
     )
   )

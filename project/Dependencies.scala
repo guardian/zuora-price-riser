@@ -7,4 +7,5 @@ object Dependencies {
   lazy val scalajHttp = "org.scalaj" %% "scalaj-http" % "2.4.1"
   lazy val json4sNative = "org.json4s" %% "json4s-native" % "3.6.2"
   lazy val jason4sExt = "org.json4s" %% "json4s-ext" % "3.6.2"
+  lazy val typesafeConfig = "com.typesafe" % "config" % "1.3.2"
 }

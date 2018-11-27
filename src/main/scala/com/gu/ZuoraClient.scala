@@ -69,16 +69,17 @@ object LocalDateSerializer extends CustomSerializer[LocalDate](format => ({
 }
 ))
 
-object ZuoraClient {
+trait MyJson4sFormats {
   implicit val codec = DefaultFormats ++ List(LocalDateSerializer)
+}
 
-  // expires in 60 min
-  val zuoraOauthAccessToken = "11dcbc9bbafc45aa8a9b6d1b3effb864"
+object ZuoraClient extends MyJson4sFormats {
+  import ZuoraOauth._
 
   def getSubscription(subscriptionName: String): Subscription = {
     val response =
       Http(s"https://rest.apisandbox.zuora.com/v1/subscriptions/${subscriptionName}")
-        .header("Authorization", s"Bearer ${zuoraOauthAccessToken}")
+        .header("Authorization", s"Bearer ${accessToken}")
         .asString
         .body
 
@@ -92,7 +93,7 @@ object ZuoraClient {
   def getAccount(accountNumber: String): Account = {
     val responseAccount =
       Http(s"https://rest.apisandbox.zuora.com/v1/accounts/${accountNumber}")
-        .header("Authorization", s"Bearer ${zuoraOauthAccessToken}")
+        .header("Authorization", s"Bearer ${accessToken}")
         .asString
         .body
 
@@ -100,4 +101,44 @@ object ZuoraClient {
     println(account)
     account
   }
+}
+
+case class Token(
+  access_token: String,
+  token_type: String,
+  expires_in: String,
+  scope: String,
+  jti: String
+)
+
+// https://www.zuora.com/developer/api-reference/#operation/createToken
+object ZuoraOauth extends MyJson4sFormats {
+  import java.util.{Timer, TimerTask}
+
+  var accessToken: String = null
+
+  private def getAccessToken(): String = {
+    println("Getting token")
+    val response = Http(s"https://rest.apisandbox.zuora.com/oauth/token")
+      .postForm(Seq(
+        "client_id" -> Config.Zuora.client_id,
+        "client_secret" -> Config.Zuora.client_secret,
+        "grant_type" -> "client_credentials"
+      ))
+      .asString
+      .body
+
+    parse(response).extract[Token].access_token
+  }
+
+  private def timerTask(): Unit = { accessToken = getAccessToken() }
+
+  private implicit def function2TimerTask(f: () => Unit): TimerTask = {
+    return new TimerTask { def run() = f() }
+  }
+
+  private val timer = new Timer()
+
+  accessToken = getAccessToken() // set token on initialization
+  timer.schedule(function2TimerTask(() => timerTask()),0, 55 * 60 * 1000) // refresh token every 55 min
 }
