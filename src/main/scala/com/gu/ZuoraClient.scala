@@ -79,8 +79,8 @@ object ZuoraClient extends MyJson4sFormats {
 
   def getSubscription(subscriptionName: String): Subscription = {
     val response =
-      Http(s"$host/v1/subscriptions/${subscriptionName}")
-        .header("Authorization", s"Bearer ${accessToken}")
+      Http(s"$host/v1/subscriptions/$subscriptionName")
+        .header("Authorization", s"Bearer $accessToken")
         .asString
         .body
 
@@ -93,8 +93,8 @@ object ZuoraClient extends MyJson4sFormats {
 
   def getAccount(accountNumber: String): Account = {
     val responseAccount =
-      Http(s"$host/v1/accounts/${accountNumber}")
-        .header("Authorization", s"Bearer ${accessToken}")
+      Http(s"$host/v1/accounts/$accountNumber")
+        .header("Authorization", s"Bearer $accessToken")
         .asString
         .body
 
@@ -135,9 +135,8 @@ object ZuoraOauth extends MyJson4sFormats {
 
   private def timerTask(): Unit = { accessToken = getAccessToken() }
 
-  private implicit def function2TimerTask(f: () => Unit): TimerTask = {
-    return new TimerTask { def run() = f() }
-  }
+  private implicit def function2TimerTask(f: () => Unit): TimerTask =
+    new TimerTask { def run(): Unit = f() }
 
   private val timer = new Timer()
 
