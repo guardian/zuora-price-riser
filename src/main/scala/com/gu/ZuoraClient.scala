@@ -75,10 +75,11 @@ trait MyJson4sFormats {
 
 object ZuoraClient extends MyJson4sFormats {
   import ZuoraOauth._
+  import ZuoraHostSelector._
 
   def getSubscription(subscriptionName: String): Subscription = {
     val response =
-      Http(s"https://rest.apisandbox.zuora.com/v1/subscriptions/${subscriptionName}")
+      Http(s"$host/v1/subscriptions/${subscriptionName}")
         .header("Authorization", s"Bearer ${accessToken}")
         .asString
         .body
@@ -92,7 +93,7 @@ object ZuoraClient extends MyJson4sFormats {
 
   def getAccount(accountNumber: String): Account = {
     val responseAccount =
-      Http(s"https://rest.apisandbox.zuora.com/v1/accounts/${accountNumber}")
+      Http(s"$host/v1/accounts/${accountNumber}")
         .header("Authorization", s"Bearer ${accessToken}")
         .asString
         .body
@@ -114,12 +115,13 @@ case class Token(
 // https://www.zuora.com/developer/api-reference/#operation/createToken
 object ZuoraOauth extends MyJson4sFormats {
   import java.util.{Timer, TimerTask}
+  import ZuoraHostSelector._
 
   var accessToken: String = null
 
   private def getAccessToken(): String = {
     println("Getting token")
-    val response = Http(s"https://rest.apisandbox.zuora.com/oauth/token")
+    val response = Http(s"$host/oauth/token")
       .postForm(Seq(
         "client_id" -> Config.Zuora.client_id,
         "client_secret" -> Config.Zuora.client_secret,
@@ -141,4 +143,13 @@ object ZuoraOauth extends MyJson4sFormats {
 
   accessToken = getAccessToken() // set token on initialization
   timer.schedule(function2TimerTask(() => timerTask()),0, 55 * 60 * 1000) // refresh token every 55 min
+}
+
+object ZuoraHostSelector {
+  val host =
+    Config.Zuora.stage match {
+      case "DEV" | "dev" => "https://rest.apisandbox.zuora.com"
+      case "PROD" | "prod" => "https://rest.zuora.com"
+      case _ => "https://rest.apisandbox.zuora.com"
+    }
 }
