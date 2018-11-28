@@ -21,6 +21,5 @@ lazy val root = (project in file(".")).
       "-Xfatal-warnings",  // New lines for each options
       "-deprecation",
       "-feature",
-      "-language:implicitConversions",
     )
   )

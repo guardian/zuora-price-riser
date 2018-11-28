@@ -133,19 +133,17 @@ object ZuoraOauth extends MyJson4sFormats {
     parse(response).extract[Token].access_token
   }
 
-  private def timerTask(): Unit = { accessToken = getAccessToken() }
-
-  private implicit def function2TimerTask(f: () => Unit): TimerTask =
-    new TimerTask { def run(): Unit = f() }
-
   private val timer = new Timer()
 
+  timer.schedule(
+    new TimerTask { def run(): Unit = accessToken = getAccessToken() },
+    0, 55 * 60 * 1000 // refresh token every 55 min
+  )
   accessToken = getAccessToken() // set token on initialization
-  timer.schedule(function2TimerTask(() => timerTask()),0, 55 * 60 * 1000) // refresh token every 55 min
 }
 
 object ZuoraHostSelector {
-  val host =
+  val host: String =
     Config.Zuora.stage match {
       case "DEV" | "dev" => "https://rest.apisandbox.zuora.com"
       case "PROD" | "prod" => "https://rest.zuora.com"
