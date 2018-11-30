@@ -23,5 +23,10 @@ lazy val root = (project in file(".")).
       "-deprecation",
       "-feature",
       "-unchecked"
-    )
+    ),
+    coverageExcludedPackages := """
+        |com.gu.Main*;
+        |com.gu.Config*;
+        |com.gu.MyJson4sFormats*;
+      """.stripMargin
   )
