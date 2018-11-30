@@ -60,7 +60,7 @@ case class CurrentInvoicedPeriod(
   object CurrentGuardianWeeklySubscription extends ((Subscription, Account) => CurrentGuardianWeeklySubscription) {
   def apply(subscription: Subscription, account: Account): CurrentGuardianWeeklySubscription = {
     val currentRatePlans = subscription.ratePlans.filter { ratePlan =>
-      List(
+      List[(CurrentGuardianWeeklyRatePlanConditions, Boolean)](
         RatePlanIsGuardianWeekly -> (ratePlan.productRatePlanId == "guadiansid"),
         LastChangeTypeIsAdd -> (ratePlan.lastChangeType == "Add"),
         RatePlanHasACharge -> ratePlan.ratePlanCharges.nonEmpty,

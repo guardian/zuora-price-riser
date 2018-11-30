@@ -38,13 +38,12 @@ object PriceRiseValidator {
     - if given priceRiseDate makes sense (is one day after invoice period end date)
     */
 
-    List(
+    List[(PriceRisePreConditions, Boolean)](
       SubscriptionIsAutoRenewable -> subscription.autoRenew,
       SubscriptionIsActive -> (subscription.status == "Active"),
       DeliveryRegionMatchesCurrency -> (Country.toCurrency(account.soldToContact.country) == account.billingAndPayment.currency),
       PriceRiseDateIsOnInvoicedPeriodEndDate -> CurrentGuardianWeeklySubscription(subscription, account).invoicedPeriod.endDateExcluding.isEqual(priceRise.priceRiseDate)
     ).forall(_._2 == true)
-    true
   }
 
 }
