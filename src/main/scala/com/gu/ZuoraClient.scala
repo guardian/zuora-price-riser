@@ -76,11 +76,11 @@ object LocalDateSerializer extends CustomSerializer[LocalDate](format => ({
 }
 ))
 
-trait MyJson4sFormats {
+trait ZuoraJsonFormats {
   implicit val codec = DefaultFormats ++ List(LocalDateSerializer)
 }
 
-object ZuoraClient extends MyJson4sFormats {
+object ZuoraClient extends ZuoraJsonFormats {
   import ZuoraOauth._
   import ZuoraHostSelector._
 
@@ -120,7 +120,7 @@ case class Token(
 )
 
 // https://www.zuora.com/developer/api-reference/#operation/createToken
-object ZuoraOauth extends MyJson4sFormats {
+object ZuoraOauth extends ZuoraJsonFormats {
   import java.util.{Timer, TimerTask}
   import ZuoraHostSelector._
 
