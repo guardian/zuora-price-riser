@@ -21,6 +21,7 @@ case class RatePlanCharge(
 
 case class RatePlan(
   id: String,
+  lastChangeType: String,
   productRatePlanId: String,
   ratePlanName: String,
   ratePlanCharges: List[RatePlanCharge]
@@ -49,6 +50,11 @@ case class BasicInfo(
   sfContactId__c: String
 )
 
+case class BillingAndPayment(
+  currency: String,
+  paymentGateway: String
+)
+
 case class SoldToContact(
   country: String,
   workEmail: String
@@ -56,6 +62,7 @@ case class SoldToContact(
 
 case class Account(
   basicInfo: BasicInfo,
+  billingAndPayment: BillingAndPayment,
   soldToContact: SoldToContact
 )
 
@@ -150,3 +157,4 @@ object ZuoraHostSelector {
       case _ => "https://rest.apisandbox.zuora.com"
     }
 }
+

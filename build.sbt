@@ -16,6 +16,7 @@ lazy val root = (project in file(".")).
       json4sNative,
       jason4sExt,
       typesafeConfig,
+      supportInternationalisation
     ),
     scalacOptions ++= Seq(
       "-Xfatal-warnings",  // New lines for each options
