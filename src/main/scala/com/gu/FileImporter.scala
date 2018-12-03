@@ -3,14 +3,14 @@ package com.gu
 import kantan.csv._
 import kantan.csv.ops._
 import kantan.csv.generic._
-import kantan.csv.java8._
-
+import kantan.csv.joda.time._
 import java.io.File
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+
+import org.joda.time.LocalDate
+import org.joda.time.format.DateTimeFormat
 
 object FileImporter {
-  val format = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+  val format = DateTimeFormat.forPattern("dd/MM/yyyy")
   implicit val decoder: CellDecoder[LocalDate] = localDateDecoder(format)
 
   type subscription_name = String

@@ -1,13 +1,13 @@
 package com.gu
 
-import java.time.LocalDate
+import org.joda.time.LocalDate
 
 /**
   * Conditions defining what Guardian Weekly subscription the customer has today
   */
 sealed trait CurrentGuardianWeeklyRatePlanConditions
 case object RatePlanIsGuardianWeekly extends CurrentGuardianWeeklyRatePlanConditions
-case object LastChangeTypeIsAdd extends CurrentGuardianWeeklyRatePlanConditions
+case object RatePlanHasNotBeenRemoved extends CurrentGuardianWeeklyRatePlanConditions
 case object TodayHasBeenInvoiced extends CurrentGuardianWeeklyRatePlanConditions // FIXME: Invoiced raised today but after running the script?
 case object RatePlanHasACharge extends CurrentGuardianWeeklyRatePlanConditions
 case object RatePlanHasOnlyOneCharge extends CurrentGuardianWeeklyRatePlanConditions
@@ -55,14 +55,12 @@ case class CurrentInvoicedPeriod(
   *
   * @return CurrentGuardianWeeklySubscription current rate plan attached to a Guardian Weekly product
   */
-
-//object CurrentGuardianWeeklySubscription extends ((Subscription, Account) => CurrentGuardianWeeklySubscription) {
-  object CurrentGuardianWeeklySubscription extends ((Subscription, Account) => CurrentGuardianWeeklySubscription) {
+object CurrentGuardianWeeklySubscription extends ((Subscription, Account) => CurrentGuardianWeeklySubscription) {
   def apply(subscription: Subscription, account: Account): CurrentGuardianWeeklySubscription = {
     val currentRatePlans = subscription.ratePlans.filter { ratePlan =>
       List[(CurrentGuardianWeeklyRatePlanConditions, Boolean)](
-        RatePlanIsGuardianWeekly -> (ratePlan.productRatePlanId == "guadiansid"),
-        LastChangeTypeIsAdd -> (ratePlan.lastChangeType == "Add"),
+        RatePlanIsGuardianWeekly -> IsGuardianWeeklyProductRatePlanId(ratePlan),
+        RatePlanHasNotBeenRemoved -> (ratePlan.lastChangeType.isEmpty || !ratePlan.lastChangeType.contains("Remove")),
         RatePlanHasACharge -> ratePlan.ratePlanCharges.nonEmpty,
         RatePlanHasOnlyOneCharge -> (ratePlan.ratePlanCharges.size == 1),
         TodayHasBeenInvoiced -> todayIsWithinInvoicedPeriod(ratePlan.ratePlanCharges.head),
@@ -70,7 +68,7 @@ case class CurrentInvoicedPeriod(
       ).forall(_._2 == true)
     }
 
-    assert(currentRatePlans.size != 1, s"There should be exactly one current plan: $subscription") // FIXME: Can this be handled?
+    assert(currentRatePlans.size == 1, s"There should be exactly one current plan: $subscription") // FIXME: Can this be handled?
 
     val currentRatePlan = currentRatePlans.head
     val currentRatePlanCharge = currentRatePlan.ratePlanCharges.head

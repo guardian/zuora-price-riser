@@ -1,6 +1,6 @@
 package com.gu
 
-import java.time.LocalDate
+import org.joda.time.LocalDate
 
 /**
   * Is date between two dates where including the start while excluding the end?

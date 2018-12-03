@@ -1,8 +1,7 @@
 package com.gu
 
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-
+import org.joda.time.LocalDate
+import org.joda.time.format.DateTimeFormat
 import scalaj.http.{Http, HttpResponse}
 import org.json4s._
 import org.json4s.native.JsonMethods._
@@ -21,7 +20,7 @@ case class RatePlanCharge(
 
 case class RatePlan(
   id: String,
-  lastChangeType: String,
+  lastChangeType: Option[String],
   productRatePlanId: String,
   ratePlanName: String,
   ratePlanCharges: List[RatePlanCharge]
@@ -71,8 +70,8 @@ object LocalDateSerializer extends CustomSerializer[LocalDate](format => ({
   case JNull => null
 }, {
   case value: LocalDate  =>
-    val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd")
-    JString(formatter.format(value))
+    val formatter = DateTimeFormat.forPattern("YYYY-MM-dd")
+    JString(formatter.print(value))
 }
 ))
 

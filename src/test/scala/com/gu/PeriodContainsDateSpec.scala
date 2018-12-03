@@ -1,12 +1,11 @@
 package com.gu
 
-import java.time.LocalDate
-
+import org.joda.time.LocalDate
 import org.scalatest._
-import java.time.format.DateTimeFormatter
+import org.joda.time.format.DateTimeFormat
 
 class PeriodContainsDateSpec extends FlatSpec with Matchers {
-  val zuoraDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  val zuoraDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
 
   "PeriodContainsDate" should "include the start bound" in {
     val start = LocalDate.parse("2018-09-01", zuoraDateFormat)
