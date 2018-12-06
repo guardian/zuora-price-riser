@@ -65,6 +65,29 @@ case class Account(
   soldToContact: SoldToContact
 )
 
+case class ProductRatePlan(
+  id: String,
+  status: String,
+  name: String,
+  productRatePlanCharges: List[ProductRatePlanCharge]
+)
+
+case class ProductRatePlanCharge(
+  id: String,
+  name: String,
+  pricing: List[Price],
+  billingPeriod: String,
+  taxCode: String
+)
+
+case class Price(
+  currency: String,
+  price: Float
+)
+
+
+
+
 object LocalDateSerializer extends CustomSerializer[LocalDate](format => ({
   case JString(str) => LocalDate.parse(str)
   case JNull => null
@@ -90,10 +113,8 @@ object ZuoraClient extends ZuoraJsonFormats {
         .asString
         .body
 
-    println(response)
 
     val subscription = parse(response).extract[Subscription]
-    println(subscription)
     subscription
   }
 
@@ -105,9 +126,37 @@ object ZuoraClient extends ZuoraJsonFormats {
         .body
 
     val account = parse(responseAccount).extract[Account]
-    println(account)
     account
   }
+
+  def getProductRatePlans(productId: String): List[ProductRatePlan] = {
+    val response =
+      Http(s"$host/v1/rateplan/$productId/productRatePlan")
+        .header("Authorization", s"Bearer $accessToken")
+        .asString
+        .body
+
+    val productRatePlans = (parse(response) \ "productRatePlans").extract[List[ProductRatePlan]]
+    println(productRatePlans)
+    pprint.pprintln(productRatePlans, height = 1000)
+    productRatePlans
+  }
+
+  private def getGuardianWeeklyProducts(guardianWeeklyProductId: String): List[GuardianWeeklyProduct] = {
+    import Config.Zuora._
+    require(
+      List(guardianWeeklyDomesticProductId, guardianWeeklyRowProductId).contains(guardianWeeklyProductId),
+      "Product ID should represent either 'Guardian Weekly - ROW' or 'Guardian Weekly - Domestic'"
+    )
+    GuardianWeeklyProducts(
+      getProductRatePlans(guardianWeeklyProductId)
+    )
+  }
+
+  def getNewGuardianWeeklyProductCatalogue() = NewGuardianWeeklyProductCatalogue(
+    domestic = getGuardianWeeklyProducts(Config.Zuora.guardianWeeklyDomesticProductId),
+    restOfTheWorld = getGuardianWeeklyProducts(Config.Zuora.guardianWeeklyRowProductId)
+  )
 }
 
 case class Token(

@@ -14,6 +14,11 @@ object Country {
       case _ if RestOfTheWorld.contains(country) => "USD"
     }
 
+  def toFutureGuardianWeeklyProductId(country: String): String = country match {
+    case _ if RestOfTheWorld.contains(country) => Config.Zuora.guardianWeeklyRowProductId
+    case _ => Config.Zuora.guardianWeeklyDomesticProductId
+  }
+
   private val UK = CountryGroup.UK.countries.map(_.name)
   private val US = CountryGroup.US.countries.map(_.name)
   private val Canada = CountryGroup.Canada.countries.map(_.name)

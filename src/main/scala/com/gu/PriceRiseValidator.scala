@@ -14,6 +14,7 @@ case object SubscriptionIsAutoRenewable extends PriceRisePreConditions
 case object SubscriptionIsActive extends PriceRisePreConditions
 case object DeliveryRegionMatchesCurrency extends PriceRisePreConditions
 case object PriceRiseDateIsOnInvoicedPeriodEndDate extends PriceRisePreConditions
+case object ImportHasCorrectCurrentPrice extends PriceRisePreConditions
 case object TargetPriceRiseIsNotMoreThanTheCap extends PriceRisePreConditions
 case object TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice extends PriceRisePreConditions
 case object TargetPriceRiseIsNotLessThanOrEqualToTheCurrentPrice extends PriceRisePreConditions
@@ -24,11 +25,14 @@ case object TargetPriceRiseIsNotLessThanCataloguePriceWhenRemovingAllDiscountRat
 case object BillingPeriodIsQuarterlyOrAnnually extends PriceRisePreConditions
 
 object PriceRiseValidator {
+  type UnsatisfiedPriceRisePreConditions = List[PriceRisePreConditions]
+
   def validate(
       priceRise: PriceRise,
       subscription: Subscription,
-      account: Account
-  ): Boolean = {
+      account: Account,
+      newGuardianWeeklyProductCatalogue: NewGuardianWeeklyProductCatalogue
+  ): UnsatisfiedPriceRisePreConditions = {
 
     /*
     - if auto-renew == true
@@ -38,12 +42,23 @@ object PriceRiseValidator {
     - if given priceRiseDate makes sense (is one day after invoice period end date)
     */
 
-    List[(PriceRisePreConditions, Boolean)](
+    val currentSubscription = CurrentGuardianWeeklySubscription(subscription, account)
+    val futureGuardianWeeklyProducts = Country.toFutureGuardianWeeklyProductId(account.soldToContact.country) match {
+      case Config.Zuora.guardianWeeklyDomesticProductId => newGuardianWeeklyProductCatalogue.domestic
+      case Config.Zuora.guardianWeeklyRowProductId => newGuardianWeeklyProductCatalogue.restOfTheWorld
+    }
+
+    val (_, unsatisfied) = List[(PriceRisePreConditions, Boolean)](
       SubscriptionIsAutoRenewable -> subscription.autoRenew,
       SubscriptionIsActive -> (subscription.status == "Active"),
       DeliveryRegionMatchesCurrency -> (Country.toCurrency(account.soldToContact.country) == account.billingAndPayment.currency),
-      PriceRiseDateIsOnInvoicedPeriodEndDate -> CurrentGuardianWeeklySubscription(subscription, account).invoicedPeriod.endDateExcluding.isEqual(priceRise.priceRiseDate)
-    ).forall(_._2 == true)
+      PriceRiseDateIsOnInvoicedPeriodEndDate -> currentSubscription.invoicedPeriod.endDateExcluding.isEqual(priceRise.priceRiseDate),
+      ImportHasCorrectCurrentPrice -> (currentSubscription.price == priceRise.currentPrice),
+      TargetPriceRiseIsNotMoreThanTheCap -> (priceRise.currentPrice * Config.priceRiseFactorCap <= priceRise.newPrice),
+      TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice -> (DefaultCataloguePrice(futureGuardianWeeklyProducts, currentSubscription) == priceRise.newPrice),
+    ).partition(_._2)
+
+    unsatisfied.map(_._1)
   }
 
 }

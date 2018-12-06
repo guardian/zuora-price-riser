@@ -32,7 +32,7 @@ case object RatePlanHasOnlyOneCharge extends CurrentGuardianWeeklyRatePlanPredic
 }
 case object ChargeIsQuarterlyOrAnnual extends CurrentGuardianWeeklyRatePlanPredicate {
   def apply(ratePlan: RatePlan): Boolean =
-    Try(List("Annual", "Quarterly").contains(ratePlan.ratePlanCharges.head.billingPeriod)).getOrElse(false)
+    Try(List("Annual", "Quarter").contains(ratePlan.ratePlanCharges.head.billingPeriod)).getOrElse(false)
 }
 
 
@@ -115,6 +115,6 @@ object CurrentGuardianWeeklySubscription extends ((Subscription, Account) => Cur
           startDateIncluding = currentGuardianWeeklyRatePlan.ratePlanCharges.head.processedThroughDate.get,
           endDateExcluding = currentGuardianWeeklyRatePlan.ratePlanCharges.head.chargedThroughDate.get)
       )
-    }.getOrElse(throw new AssertionError(s"Subscription does not have a current Guardian Weekly rate plan: $subscription; $account"))
+    }.getOrElse(throw new AssertionError(s"Subscription does not have a current Guardian Weekly rate plan: ${pprint.apply(subscription)}; ${pprint.apply(account)}"))
 }
 

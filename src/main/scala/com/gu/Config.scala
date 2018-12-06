@@ -9,7 +9,6 @@ object Config {
     val client_id = conf.getString("zuora.client_id")
     val client_secret = conf.getString("zuora.client_secret")
 
-
     /**
         Contains list of all Product Rate Plan IDs for Guardian Weekly obtained manually
         using the following query:
@@ -55,7 +54,43 @@ object Config {
         case _ => dev
       }
     }
+
+    val guardianWeeklyProductIds = {
+      val dev = List(
+        "2c92c0f8574b2b8101574c4a9473068b", // "name":"Guardian Weekly Zone A"
+        "2c92c0f95703468a015704e268635dd5", // "name":"Guardian Weekly Zone B"
+        "2c92c0f858aa38af0158da325ce00b2c", // "name":"Guardian Weekly Zone C"
+        "2c92c0f865d272ef0165f14cc19d238a", // "name":"Guardian Weekly - Domestic"
+        "2c92c0f965f2121e01660fb1f1057b1a", // "name":"Guardian Weekly - ROW"
+      )
+      val prod = List()
+
+      Config.Zuora.stage match {
+        case "DEV" | "dev" => dev
+        case "PROD" | "prod" => prod
+        case _ => dev
+      }
+    }
+
+    // "2c92c0f865d272ef0165f14cc19d238a", // "name":"Guardian Weekly - Domestic"
+    val guardianWeeklyDomesticProductId: String =
+      Config.Zuora.stage match {
+        case "DEV" | "dev" => "2c92c0f865d272ef0165f14cc19d238a"
+        case "PROD" | "prod" => ""
+        case _ => "2c92c0f865d272ef0165f14cc19d238a"
+      }
+
+    // "2c92c0f965f2121e01660fb1f1057b1a", // "name":"Guardian Weekly - ROW"
+    val guardianWeeklyRowProductId: String =
+      Config.Zuora.stage match {
+        case "DEV" | "dev" => "2c92c0f965f2121e01660fb1f1057b1a"
+        case "PROD" | "prod" => ""
+        case _ => "2c92c0f965f2121e01660fb1f1057b1a"
+      }
+
   }
+
+  val priceRiseFactorCap = 1.5 // cap is 50% rise
 
 
 }

@@ -23,9 +23,9 @@ class CurrentGuardianWeeklySubscriptionSpec extends FlatSpec with Matchers with 
   it should "satisfy all the CurrentGuardianWeeklyRatePlanConditions" in {
     DateTimeUtils.setCurrentMillisFixed(Instant.parse("2018-12-15").getMillis)
 
-      val subscripitonRaw = Source.fromURL(getClass.getResource("/subscription-valid.json")).mkString
+      val subscriptionRaw = Source.fromURL(getClass.getResource("/subscription-valid.json")).mkString
       val accountRaw = Source.fromURL(getClass.getResource("/account-valid.json")).mkString
-      val subscription = parse(subscripitonRaw).extract[Subscription]
+      val subscription = parse(subscriptionRaw).extract[Subscription]
       val account = parse(accountRaw).extract[Account]
       CurrentGuardianWeeklySubscription(subscription, account).subscriptionNumber should be ("A-S00047886")
 
