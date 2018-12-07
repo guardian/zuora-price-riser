@@ -30,5 +30,6 @@ lazy val root = (project in file(".")).
     coverageExcludedPackages := """
         |com.gu.Main*;
         |com.gu.Config*;
-      """.stripMargin
+      """.stripMargin,
+    trapExit := false
   )
