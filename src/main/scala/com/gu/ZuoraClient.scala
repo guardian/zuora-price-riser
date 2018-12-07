@@ -154,8 +154,8 @@ object ZuoraClient extends ZuoraJsonFormats {
         .body
 
     val productRatePlans = (parse(response) \ "productRatePlans").extract[List[ProductRatePlan]]
-    println(productRatePlans)
-    pprint.pprintln(productRatePlans, height = 1000)
+//    println(productRatePlans)
+//    pprint.pprintln(productRatePlans, height = 1000)
     productRatePlans
   }
 
@@ -241,7 +241,6 @@ object ZuoraOauth extends ZuoraJsonFormats {
   var accessToken: String = null
 
   private def getAccessToken(): String = {
-    println("Getting token")
     val response = Http(s"$host/oauth/token")
       .postForm(Seq(
         "client_id" -> Config.Zuora.client_id,

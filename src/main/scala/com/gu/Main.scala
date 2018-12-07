@@ -1,14 +1,13 @@
 package com.gu
 
-import org.joda.time.LocalDate
+import com.typesafe.scalalogging.LazyLogging
 
-object Main extends App with ZuoraJsonFormats {
+object Main extends App with LazyLogging {
 
   val priceRises = FileImporter.importCsv()
   priceRises.foreach {
     case Left(error) =>
-      println(error)
-      // ErrorLogger.write("bad import row")
+      logger.error(s"Bad import: $error")
 
     case Right(priceRise) =>
       val newGuardianWeeklyProductCatalogue = ZuoraClient.getNewGuardianWeeklyProductCatalogue()
@@ -21,20 +20,15 @@ object Main extends App with ZuoraJsonFormats {
       val unsatisfiedPriceRiseRequestConditions = PriceRiseRequestValidation(priceRiseRequest, currentSubscription)
 
       if (unsatisfiedPriceRisePreConditions.isEmpty && unsatisfiedPriceRiseRequestConditions.isEmpty) {
-
-        println("validation successful")
-        println(priceRise.subscriptionName)
-        println(priceRiseRequest)
+        logger.info(s"validation successful for ${priceRise.subscriptionName}")
         val priceRiseResponse = ZuoraClient.removeAndAddAProductRatePlan(priceRise.subscriptionName, priceRiseRequest)
 
         if (priceRiseResponse.success)
-          println(s"Successfully applied price rise to ${priceRise.subscriptionName}")
+          logger.info(s"Successfully applied price rise to ${priceRise.subscriptionName}")
         else
           throw new RuntimeException(s"Failed to apply price rice to ${priceRise.subscriptionName}: $priceRiseResponse")
-
       } else {
-        // ErrorLogger.write("price rise failed validation")
-        println(s"${priceRise.subscriptionName} failed because of unsatisfied conditions: $unsatisfiedPriceRisePreConditions; $unsatisfiedPriceRiseRequestConditions")
+        logger.error(s"${priceRise.subscriptionName} failed because of unsatisfied conditions: $unsatisfiedPriceRisePreConditions; $unsatisfiedPriceRiseRequestConditions")
       }
   }
 

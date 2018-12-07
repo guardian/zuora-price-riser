@@ -17,7 +17,9 @@ lazy val root = (project in file(".")).
       jason4sExt,
       typesafeConfig,
       supportInternationalisation,
-      "com.lihaoyi" %% "pprint" % "0.5.3"
+      "com.lihaoyi" %% "pprint" % "0.5.3",
+      "ch.qos.logback" % "logback-classic" % "1.2.3",
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0"
     ),
     scalacOptions ++= Seq(
       "-Xfatal-warnings",  // New lines for each options
