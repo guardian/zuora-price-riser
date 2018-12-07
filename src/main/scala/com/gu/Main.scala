@@ -1,7 +1,8 @@
 package com.gu
 
-object Main extends App {
-  val newGuardianWeeklyProductCatalogue = ZuoraClient.getNewGuardianWeeklyProductCatalogue()
+import org.joda.time.LocalDate
+
+object Main extends App with ZuoraJsonFormats {
 
   val priceRises = FileImporter.importCsv()
   priceRises.foreach {
@@ -10,19 +11,32 @@ object Main extends App {
       // ErrorLogger.write("bad import row")
 
     case Right(priceRise) =>
-//      val subscription = ZuoraClient.getSubscription("A-S00047206")
+      val newGuardianWeeklyProductCatalogue = ZuoraClient.getNewGuardianWeeklyProductCatalogue()
       val subscription = ZuoraClient.getSubscription(priceRise.subscriptionName)
       val account = ZuoraClient.getAccount(subscription.accountNumber)
-      val unsatisfiedPriceRisePreConditions =
-        PriceRiseValidator.validate(priceRise, subscription, account, newGuardianWeeklyProductCatalogue)
+      val currentSubscription = CurrentGuardianWeeklySubscription(subscription, account)
+      val priceRiseRequest = PriceRiseRequestBuilder(currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
 
-      if (unsatisfiedPriceRisePreConditions.isEmpty) {
+      val unsatisfiedPriceRisePreConditions = PriceRiseValidator.validate(priceRise, subscription, account, newGuardianWeeklyProductCatalogue)
+      val unsatisfiedPriceRiseRequestConditions = PriceRiseRequestValidation(priceRiseRequest, currentSubscription)
+
+      if (unsatisfiedPriceRisePreConditions.isEmpty && unsatisfiedPriceRiseRequestConditions.isEmpty) {
+
         println("validation successful")
         println(priceRise.subscriptionName)
+        println(priceRiseRequest)
+        val priceRiseResponse = ZuoraClient.removeAndAddAProductRatePlan(priceRise.subscriptionName, priceRiseRequest)
+
+        if (priceRiseResponse.success)
+          println(s"Successfully applied price rise to ${priceRise.subscriptionName}")
+        else
+          throw new RuntimeException(s"Failed to apply price rice to ${priceRise.subscriptionName}: $priceRiseResponse")
+
       } else {
         // ErrorLogger.write("price rise failed validation")
-        println(s"${priceRise.subscriptionName} failed because of unsatisfied conditions: $unsatisfiedPriceRisePreConditions")
+        println(s"${priceRise.subscriptionName} failed because of unsatisfied conditions: $unsatisfiedPriceRisePreConditions; $unsatisfiedPriceRiseRequestConditions")
       }
   }
+
 }
 

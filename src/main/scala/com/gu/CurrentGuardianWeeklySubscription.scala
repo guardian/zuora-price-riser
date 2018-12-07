@@ -73,7 +73,8 @@ case class CurrentGuardianWeeklySubscription(
   price: Float,
   currency: String,
   country: String,
-  invoicedPeriod: CurrentInvoicedPeriod
+  invoicedPeriod: CurrentInvoicedPeriod,
+  ratePlanId: String
 )
 
 /**
@@ -113,7 +114,8 @@ object CurrentGuardianWeeklySubscription extends ((Subscription, Account) => Cur
         country = account.soldToContact.country,
         invoicedPeriod = CurrentInvoicedPeriod(
           startDateIncluding = currentGuardianWeeklyRatePlan.ratePlanCharges.head.processedThroughDate.get,
-          endDateExcluding = currentGuardianWeeklyRatePlan.ratePlanCharges.head.chargedThroughDate.get)
+          endDateExcluding = currentGuardianWeeklyRatePlan.ratePlanCharges.head.chargedThroughDate.get),
+        ratePlanId = currentGuardianWeeklyRatePlan.id
       )
     }.getOrElse(throw new AssertionError(s"Subscription does not have a current Guardian Weekly rate plan: ${pprint.apply(subscription)}; ${pprint.apply(account)}"))
 }

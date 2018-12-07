@@ -5,6 +5,7 @@ import org.joda.time.format.DateTimeFormat
 import scalaj.http.{Http, HttpResponse}
 import org.json4s._
 import org.json4s.native.JsonMethods._
+import org.json4s.native.Serialization.write
 
 case class RatePlanCharge(
   id: String,
@@ -85,8 +86,24 @@ case class Price(
   price: Float
 )
 
+case class RemoveRatePlan(ratePlanId: String, contractEffectiveDate: LocalDate)
+case class ChargeOverride(productRatePlanChargeId: String, price: Float)
+case class AddProductRatePlan(productRatePlanId: String, contractEffectiveDate: LocalDate, chargeOverrides: Option[List[ChargeOverride]])
+
+case class PriceRiseRequest(
+  remove: List[RemoveRatePlan],
+  add: List[AddProductRatePlan]
+)
 
 
+case class Reason(
+  code: Int,
+  message: String
+)
+case class PriceRiseResponse(
+  success: Boolean,
+  reasons: Option[List[Reason]]
+)
 
 object LocalDateSerializer extends CustomSerializer[LocalDate](format => ({
   case JString(str) => LocalDate.parse(str)
@@ -157,6 +174,55 @@ object ZuoraClient extends ZuoraJsonFormats {
     domestic = getGuardianWeeklyProducts(Config.Zuora.guardianWeeklyDomesticProductId),
     restOfTheWorld = getGuardianWeeklyProducts(Config.Zuora.guardianWeeklyRowProductId)
   )
+
+
+  /*
+  PUT /v1/subscriptions/A-S00047834 HTTP/1.1
+  Host: rest.apisandbox.zuora.com
+  apiAccessKeyId: mario.galic_SB@guardian.co.uk
+  apiSecretAccessKey: ************
+  Accept: application/json
+  Content-Type: application/json
+  cache-control: no-cache
+  {
+      "remove": [
+          {
+              "ratePlanId": "2c92c0fb6736875d0167552b1a3a5058",
+              "contractEffectiveDate": "2019-03-07"
+          }
+      ],
+      "add": [
+          {
+              "productRatePlanId": "2c92c0f965dc30640165f150c0956859",
+              "contractEffectiveDate": "2019-03-07",
+              "chargeOverrides": [
+                  {
+                      "productRatePlanChargeId": "2c92c0f865d273010165f16ada0a4346",
+                      "price": 99
+                  }
+              ]
+          }
+      ]
+  }
+    */
+  def removeAndAddAProductRatePlan(
+      subscriptionName: String,
+      body: PriceRiseRequest): PriceRiseResponse = {
+    val jsonBody = write(body)
+    println(jsonBody)
+    val response = Http(s"$host/v1/subscriptions/$subscriptionName")
+      .method("PUT")
+      .header("Authorization", s"Bearer $accessToken")
+      .header("content-type", "application/json")
+      .postData(jsonBody)
+      .asString
+
+    response.code match {
+      case 200 => parse(response.body).extract[PriceRiseResponse]
+      case _ => throw new RuntimeException(s"$subscriptionName failed to raise price due to Zuora networking issue: $response")
+    }
+
+  }
 }
 
 case class Token(
