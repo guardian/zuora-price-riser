@@ -153,10 +153,8 @@ object ZuoraClient extends ZuoraJsonFormats {
         .asString
         .body
 
-    val productRatePlans = (parse(response) \ "productRatePlans").extract[List[ProductRatePlan]]
-//    println(productRatePlans)
-//    pprint.pprintln(productRatePlans, height = 1000)
-    productRatePlans
+    //pprint.pprintln(productRatePlans, height = 1000)
+    (parse(response) \ "productRatePlans").extract[List[ProductRatePlan]]
   }
 
   private def getGuardianWeeklyProducts(guardianWeeklyProductId: String): List[GuardianWeeklyProduct] = {
@@ -208,13 +206,11 @@ object ZuoraClient extends ZuoraJsonFormats {
   def removeAndAddAProductRatePlan(
       subscriptionName: String,
       body: PriceRiseRequest): PriceRiseResponse = {
-    val jsonBody = write(body)
-    println(jsonBody)
     val response = Http(s"$host/v1/subscriptions/$subscriptionName")
       .method("PUT")
       .header("Authorization", s"Bearer $accessToken")
       .header("content-type", "application/json")
-      .postData(jsonBody)
+      .postData(write(body))
       .asString
 
     response.code match {

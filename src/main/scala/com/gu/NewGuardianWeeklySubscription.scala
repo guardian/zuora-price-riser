@@ -30,6 +30,9 @@ object DefaultCataloguePrice extends ((List[GuardianWeeklyProduct], CurrentGuard
 
 /**
   * Flattened representation of Guardian Weekly subscription after the price rise has been applied.
+  *
+  * Note this does only a quick and simple check on the basis of Product Rate Plan ID. Please see
+  * PriceRiseResponseValidation for full validation of successfully applied price rise.
   */
 object NewGuardianWeeklySubscription {
   def apply(
@@ -42,16 +45,13 @@ object NewGuardianWeeklySubscription {
         newGuardianWeeklyProductCatalogue.getAllProductRatePlanIds.contains(ratePlan.productRatePlanId)
       }
 
-    assert(newRatePlans.size == 1)
-    assert(newRatePlans.head.ratePlanCharges.size == 1)
+    assert(newRatePlans.size == 1, "NewGuardianWeeklyRatePlanExists not satisfied")
+    assert(newRatePlans.head.ratePlanCharges.size == 1, "NewGuardianWeeklyRatePlanHasOnlyOneCharge not satisfied ")
 
     val newRatePlan = newRatePlans.head
     val newRatePlanCharge = newRatePlan.ratePlanCharges.head
     val newProductRatePlanId = newRatePlan.productRatePlanId
     val newProductRatePlanChargeId = newRatePlanCharge.productRatePlanChargeId
-    val price = newRatePlanCharge.price
-
-    assert(newRatePlanCharge.effectiveStartDate.isAfter(LocalDate.now()))
 
     NewGuardianWeeklySubscription(
       subscriptionAfterPriceRise.subscriptionNumber,
@@ -61,7 +61,6 @@ object NewGuardianWeeklySubscription {
       newProductRatePlanId,
       newProductRatePlanChargeId
     )
-
   }
 }
 /**
