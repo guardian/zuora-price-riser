@@ -6,41 +6,50 @@ import com.typesafe.scalalogging.LazyLogging
   * The script will stop on the first error it encounters.
   */
 object Main extends App with LazyLogging {
-  try {
-    val priceRises = FileImporter.importCsv()
+  FileImporter.importCsv().foreach {
+    case Left(importError) =>
+      Abort(s"Bad import file: $importError")
 
-    priceRises.foreach {
-      case Left(error) =>
-        Abort(s"Bad import: $error")
+    case Right(priceRise) =>
+      // **************************************************************************************************************
+      // 1. PREPARE DATA
+      // **************************************************************************************************************
+      val newGuardianWeeklyProductCatalogue = ZuoraClient.getNewGuardianWeeklyProductCatalogue()
+      val subscription = ZuoraClient.getSubscription(priceRise.subscriptionName)
+      val account = ZuoraClient.getAccount(subscription.accountNumber)
+      val currentSubscription = CurrentGuardianWeeklySubscription(subscription, account)
+      val priceRiseRequest = PriceRiseRequestBuilder(currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
 
-      case Right(priceRise) =>
-        val newGuardianWeeklyProductCatalogue = ZuoraClient.getNewGuardianWeeklyProductCatalogue()
-        val subscription = ZuoraClient.getSubscription(priceRise.subscriptionName)
-        val account = ZuoraClient.getAccount(subscription.accountNumber)
-        val currentSubscription = CurrentGuardianWeeklySubscription(subscription, account)
-        val priceRiseRequest = PriceRiseRequestBuilder(currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
+      // **************************************************************************************************************
+      // 2. CHECK PRE-CONDITIONS
+      // **************************************************************************************************************
+      val unsatisfiedPriceRisePreConditions = PriceRiseValidation(priceRise, subscription, account, newGuardianWeeklyProductCatalogue)
+      val unsatisfiedPriceRiseRequestConditions = PriceRiseRequestValidation(priceRiseRequest, currentSubscription)
+      val preConditions = unsatisfiedPriceRisePreConditions ++ unsatisfiedPriceRiseRequestConditions
+      if (preConditions.nonEmpty)
+        Abort(s"${priceRise.subscriptionName} failed because of unsatisfied pre-conditions: $preConditions")
 
-        val unsatisfiedPriceRisePreConditions = PriceRiseValidator.validate(priceRise, subscription, account, newGuardianWeeklyProductCatalogue)
-        val unsatisfiedPriceRiseRequestConditions = PriceRiseRequestValidation(priceRiseRequest, currentSubscription)
+      // **************************************************************************************************************
+      // 3. MUTATE
+      // **************************************************************************************************************
+      val priceRiseResponse = ZuoraClient.removeAndAddAProductRatePlan(priceRise.subscriptionName, priceRiseRequest)
 
-        if (unsatisfiedPriceRisePreConditions.isEmpty && unsatisfiedPriceRiseRequestConditions.isEmpty) {
-          logger.info(s"validation successful for ${priceRise.subscriptionName}")
-          val priceRiseResponse = ZuoraClient.removeAndAddAProductRatePlan(priceRise.subscriptionName, priceRiseRequest)
+      // **************************************************************************************************************
+      // 4. CHECK POST-CONDITIONS
+      // **************************************************************************************************************
+      if (!priceRiseResponse.success)
+        Abort(s"Failed price rise request for ${priceRise.subscriptionName}: $priceRiseResponse")
+      val subscriptionAfterPriceRise = ZuoraClient.getSubscription(priceRise.subscriptionName)
+      val accountAfterPriceRise = ZuoraClient.getAccount(subscription.accountNumber)
+      val unsatisfiedPriceRiseResponseConditions = PriceRiseResponseValidation(subscriptionAfterPriceRise, account, newGuardianWeeklyProductCatalogue, priceRise)
+      if (unsatisfiedPriceRiseResponseConditions.nonEmpty)
+        Abort(s"${priceRise.subscriptionName} failed because of unsatisfied post-conditions: $unsatisfiedPriceRiseResponseConditions")
+      val newGuardianWeeklySubscription = NewGuardianWeeklySubscription(subscriptionAfterPriceRise, accountAfterPriceRise, newGuardianWeeklyProductCatalogue)
 
-          if (priceRiseResponse.success)
-            logger.info(s"Successfully applied price rise to ${priceRise.subscriptionName}")
-          else {
-            Abort(s"Failed price rise request for ${priceRise.subscriptionName}: $priceRiseResponse")
-          }
-
-        } else {
-          Abort(s"${priceRise.subscriptionName} failed because of unsatisfied conditions: $unsatisfiedPriceRisePreConditions; $unsatisfiedPriceRiseRequestConditions")
-        }
-
-    }
-
-  } catch {
-    case e: Exception => Abort(s"Failed because of unknown reason: $e")
+      // **************************************************************************************************************
+      // 5. LOG SUCCESS
+      // **************************************************************************************************************
+      logger.info(s"${priceRise.subscriptionName} successfully applied price rise: $newGuardianWeeklySubscription")
   }
 }
 

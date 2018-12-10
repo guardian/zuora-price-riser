@@ -24,10 +24,10 @@ case object CurrentlyActiveProductRatePlanIsGuardianWeeklyRatePlan extends Price
 case object TargetPriceRiseIsNotLessThanCataloguePriceWhenRemovingAllDiscountRatePlans extends PriceRisePreConditions
 case object BillingPeriodIsQuarterlyOrAnnually extends PriceRisePreConditions
 
-object PriceRiseValidator {
+object PriceRiseValidation {
   type UnsatisfiedPriceRisePreConditions = List[PriceRisePreConditions]
 
-  def validate(
+  def apply(
       priceRise: PriceRise,
       subscription: Subscription,
       account: Account,

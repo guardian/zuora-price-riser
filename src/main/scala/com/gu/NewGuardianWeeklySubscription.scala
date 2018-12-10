@@ -1,5 +1,8 @@
 package com.gu
 
+import com.gu.FileImporter.PriceRise
+import org.joda.time.LocalDate
+
 /**
   * Model representing subscription after the price rise.
   */
@@ -25,22 +28,42 @@ object DefaultCataloguePrice extends ((List[GuardianWeeklyProduct], CurrentGuard
   }
 }
 
+/**
+  * Flattened representation of Guardian Weekly subscription after the price rise has been applied.
+  */
+object NewGuardianWeeklySubscription {
+  def apply(
+      subscriptionAfterPriceRise: Subscription,
+      accountAfterPriceRise: Account,
+      newGuardianWeeklyProductCatalogue: NewGuardianWeeklyProductCatalogue,
+  ): NewGuardianWeeklySubscription = {
+    val newRatePlans =
+      subscriptionAfterPriceRise.ratePlans.filter { ratePlan =>
+        newGuardianWeeklyProductCatalogue.getAllProductRatePlanIds.contains(ratePlan.productRatePlanId)
+      }
 
-// delivery country -> productId
-// billing period -> (productRatePlanId, productRatePlanCharge)
-// currency -> currency
+    assert(newRatePlans.size == 1)
+    assert(newRatePlans.head.ratePlanCharges.size == 1)
 
-//object FutureGuardianWeeklySubscription {
-//  def apply(currentSubscription: CurrentGuardianWeeklySubscription): FutureGuardianWeeklySubscription = {
-//    val deliveryCountry: String = currentSubscription.country
-//    val billingPeriod: String = currentSubscription.billingPeriod
-//    val currency: String = currentSubscription.currency
-//
-//
-//
-//  }
-//}
+    val newRatePlan = newRatePlans.head
+    val newRatePlanCharge = newRatePlan.ratePlanCharges.head
+    val newProductRatePlanId = newRatePlan.productRatePlanId
+    val newProductRatePlanChargeId = newRatePlanCharge.productRatePlanChargeId
+    val price = newRatePlanCharge.price
 
+    assert(newRatePlanCharge.effectiveStartDate.isAfter(LocalDate.now()))
+
+    NewGuardianWeeklySubscription(
+      subscriptionAfterPriceRise.subscriptionNumber,
+      newRatePlanCharge.price,
+      newRatePlanCharge.currency,
+      accountAfterPriceRise.soldToContact.country,
+      newProductRatePlanId,
+      newProductRatePlanChargeId
+    )
+
+  }
+}
 /**
   * Single flattened model representing Guardian Weekly product.
   *
@@ -72,6 +95,12 @@ case class NewGuardianWeeklyProductCatalogue(
   require(domestic.forall(_.productRatePlanName.contains("Domestic")))
   require(restOfTheWorld.forall(_.productRatePlanName.contains("ROW")))
   require(domestic.nonEmpty && restOfTheWorld.nonEmpty)
+
+  def getAllProductRatePlanIds: List[String] =
+    domestic.map(_.productRatePlanId) ++ restOfTheWorld.map(_.productRatePlanId)
+
+  def getAllProductRatePlanChargeIds: List[String] =
+    domestic.map(_.productRatePlanChargeId) ++ restOfTheWorld.map(_.productRatePlanChargeId)
 }
 
 /**
