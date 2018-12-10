@@ -29,27 +29,32 @@ object Main extends App with LazyLogging {
       if (preConditions.nonEmpty)
         Abort(s"${priceRise.subscriptionName} failed because of unsatisfied pre-conditions: $preConditions")
 
-      // **************************************************************************************************************
-      // 3. MUTATE
-      // **************************************************************************************************************
-      val priceRiseResponse = ZuoraClient.removeAndAddAProductRatePlan(priceRise.subscriptionName, priceRiseRequest)
+      if (PriceRiseAlreadyApplied(subscription, account, newGuardianWeeklyProductCatalogue)) {
+        logger.info(s"${priceRise.subscriptionName} skipped because price rise already applied")
+      } else {
+        // **************************************************************************************************************
+        // 3. MUTATE
+        // **************************************************************************************************************
+        val priceRiseResponse = ZuoraClient.removeAndAddAProductRatePlan(priceRise.subscriptionName, priceRiseRequest)
 
-      // **************************************************************************************************************
-      // 4. CHECK POST-CONDITIONS
-      // **************************************************************************************************************
-      if (!priceRiseResponse.success)
-        Abort(s"Failed price rise request for ${priceRise.subscriptionName}: $priceRiseResponse")
-      val subscriptionAfterPriceRise = ZuoraClient.getSubscription(priceRise.subscriptionName)
-      val accountAfterPriceRise = ZuoraClient.getAccount(subscription.accountNumber)
-      val unsatisfiedPriceRiseResponseConditions = PriceRiseResponseValidation(subscriptionAfterPriceRise, account, newGuardianWeeklyProductCatalogue, priceRise)
-      if (unsatisfiedPriceRiseResponseConditions.nonEmpty)
-        Abort(s"${priceRise.subscriptionName} failed because of unsatisfied post-conditions: $unsatisfiedPriceRiseResponseConditions")
-      val newGuardianWeeklySubscription = NewGuardianWeeklySubscription(subscriptionAfterPriceRise, accountAfterPriceRise, newGuardianWeeklyProductCatalogue)
+        // **************************************************************************************************************
+        // 4. CHECK POST-CONDITIONS
+        // **************************************************************************************************************
+        if (!priceRiseResponse.success)
+          Abort(s"Failed price rise request for ${priceRise.subscriptionName}: $priceRiseResponse")
+        val subscriptionAfterPriceRise = ZuoraClient.getSubscription(priceRise.subscriptionName)
+        val accountAfterPriceRise = ZuoraClient.getAccount(subscription.accountNumber)
+        val unsatisfiedPriceRiseResponseConditions = PriceRiseResponseValidation(subscriptionAfterPriceRise, account, newGuardianWeeklyProductCatalogue, priceRise)
+        if (unsatisfiedPriceRiseResponseConditions.nonEmpty)
+          Abort(s"${priceRise.subscriptionName} failed because of unsatisfied post-conditions: $unsatisfiedPriceRiseResponseConditions")
+        val newGuardianWeeklySubscription = NewGuardianWeeklySubscription(subscriptionAfterPriceRise, accountAfterPriceRise, newGuardianWeeklyProductCatalogue)
 
-      // **************************************************************************************************************
-      // 5. LOG SUCCESS
-      // **************************************************************************************************************
-      logger.info(s"${priceRise.subscriptionName} successfully applied price rise: $newGuardianWeeklySubscription")
+        // **************************************************************************************************************
+        // 5. LOG SUCCESS
+        // **************************************************************************************************************
+        logger.info(s"${priceRise.subscriptionName} successfully applied price rise: $newGuardianWeeklySubscription")
+      }
+
   }
 }
 
