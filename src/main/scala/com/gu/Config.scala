@@ -3,11 +3,11 @@ package com.gu
 import com.typesafe.config.ConfigFactory
 
 object Config {
-  val conf = ConfigFactory.load
+  private val conf = ConfigFactory.load
   object Zuora {
-    val stage = conf.getString("zuora.stage")
-    val client_id = conf.getString("zuora.client_id")
-    val client_secret = conf.getString("zuora.client_secret")
+    val stage: String = conf.getString("zuora.stage")
+    val client_id: String = conf.getString("zuora.client_id")
+    val client_secret: String = conf.getString("zuora.client_secret")
 
     /**
         Contains list of all Product Rate Plan IDs for Guardian Weekly obtained manually
@@ -29,7 +29,7 @@ object Config {
           }
         }
       */
-    val guardianWeeklyProductRatePlanIds = {
+    val guardianWeeklyProductRatePlanIds: List[String] = {
       val dev = List(
         "2c92c0f8574b2b8101574c4a9480068d", // "name":"Guardian Weekly Annual"
         "2c92c0f8574b2b8101574c4a957706be", // "name":"Guardian Weekly Quarterly"
@@ -55,7 +55,7 @@ object Config {
       }
     }
 
-    val guardianWeeklyProductIds = {
+    val guardianWeeklyProductIds: List[String] = {
       val dev = List(
         "2c92c0f8574b2b8101574c4a9473068b", // "name":"Guardian Weekly Zone A"
         "2c92c0f95703468a015704e268635dd5", // "name":"Guardian Weekly Zone B"
@@ -89,7 +89,7 @@ object Config {
       }
 
     // Do not remove Holiday and Retention Discounts
-    val doNotRemoveProductRatePlanIds =
+    val doNotRemoveProductRatePlanIds: List[String] =
       Config.Zuora.stage match {
         case "DEV" | "dev" => List(
           "2c92c0f9-6716-86a2-0167-1d14b5e5771e", // "name":"Guardian Weekly Holiday Credit"
@@ -102,7 +102,6 @@ object Config {
           ""
         )
       }
-
   }
 
   val priceRiseFactorCap = 1.5 // cap is 50% rise
