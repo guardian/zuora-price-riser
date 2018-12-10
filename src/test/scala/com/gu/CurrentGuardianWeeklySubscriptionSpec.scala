@@ -14,7 +14,7 @@ class CurrentGuardianWeeklySubscriptionSpec extends FlatSpec with Matchers with 
     val subscription = parse(subscripitonRaw).extract[Subscription]
     val account = parse(accountRaw).extract[Account]
 
-    intercept[AssertionError] {
+    intercept[RuntimeException] {
       CurrentGuardianWeeklySubscription(subscription, account)
     }
   }
