@@ -18,7 +18,7 @@ object Main extends App with LazyLogging {
       val subscription = ZuoraClient.getSubscription(priceRise.subscriptionName)
       val account = ZuoraClient.getAccount(subscription.accountNumber)
       val currentSubscription = CurrentGuardianWeeklySubscription(subscription, account)
-      val priceRiseRequest = PriceRiseRequestBuilder(currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
+      val priceRiseRequest = PriceRiseRequestBuilder(subscription, currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
 
       // **************************************************************************************************************
       // 2. CHECK PRE-CONDITIONS

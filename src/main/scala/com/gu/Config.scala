@@ -88,6 +88,21 @@ object Config {
         case _ => "2c92c0f965f2121e01660fb1f1057b1a"
       }
 
+    // Do not remove Holiday and Retention Discounts
+    val doNotRemoveProductRatePlanIds =
+      Config.Zuora.stage match {
+        case "DEV" | "dev" => List(
+          "2c92c0f9-6716-86a2-0167-1d14b5e5771e", // "name":"Guardian Weekly Holiday Credit"
+          "", // TODO: Add Retention Discounts
+        )
+        case "PROD" | "prod" => List(
+          ""
+        )
+        case _ => List(
+          ""
+        )
+      }
+
   }
 
   val priceRiseFactorCap = 1.5 // cap is 50% rise
