@@ -13,36 +13,27 @@ object PriceRiseRequestBuilder {
       priceRise: PriceRise
   ): PriceRiseRequest = {
 
-    require(currentGuardianWeeklySubscription.subscriptionNumber == priceRise.subscriptionName, "")
+    require(currentGuardianWeeklySubscription.subscriptionNumber == priceRise.subscriptionName, "Price rise applied to a wrong subscription.")
 
-    val newGuardianWeeklyProducts =
-      Country.toFutureGuardianWeeklyProductId(currentGuardianWeeklySubscription.country) match {
-        case Config.Zuora.guardianWeeklyDomesticProductId => newGuardianWeeklyProductCatalogue.domestic
-        case Config.Zuora.guardianWeeklyRowProductId => newGuardianWeeklyProductCatalogue.restOfTheWorld
-      }
+    val newGuardianWeeklyProduct =
+      GuardianWeeklyProduct(currentGuardianWeeklySubscription, newGuardianWeeklyProductCatalogue)
 
-    newGuardianWeeklyProducts
-      .find(_.billingPeriod == currentGuardianWeeklySubscription.billingPeriod)
-      .map { newGuardianWeeklyProduct =>
-        val chargeOverride = ChargeOverride(
-          newGuardianWeeklyProduct.productRatePlanChargeId,
-          priceRise.newPrice
-        )
+    val chargeOverride = ChargeOverride(
+      newGuardianWeeklyProduct.productRatePlanChargeId,
+      priceRise.newPrice
+    )
 
-        val addProductRatePlan = AddProductRatePlan(
-          newGuardianWeeklyProduct.productRatePlanId,
-          priceRise.priceRiseDate,
-          Some(List(chargeOverride))
-        )
+    val addProductRatePlan = AddProductRatePlan(
+      newGuardianWeeklyProduct.productRatePlanId,
+      priceRise.priceRiseDate,
+      Some(List(chargeOverride))
+    )
 
-        PriceRiseRequest(
-          remove = RemoveRatePlans(subscription, currentGuardianWeeklySubscription, priceRise),
-          add = List(addProductRatePlan)
-        )
-      }
-      .getOrElse(throw new RuntimeException(s"${currentGuardianWeeklySubscription.subscriptionNumber} failed to build PriceRiseRequest: $currentGuardianWeeklySubscription; $priceRise; $newGuardianWeeklyProducts $currentGuardianWeeklySubscription"))
+    PriceRiseRequest(
+      remove = RemoveRatePlans(subscription, currentGuardianWeeklySubscription, priceRise),
+      add = List(addProductRatePlan)
+    )
   }
-
 }
 
 

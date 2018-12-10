@@ -31,20 +31,18 @@ object CheckPriceRisePreConditions {
       newGuardianWeeklyProductCatalogue: NewGuardianWeeklyProductCatalogue
   ): UnsatisfiedPriceRisePreConditions = {
 
-    val currentSubscription = CurrentGuardianWeeklySubscription(subscription, account)
-    val futureGuardianWeeklyProducts = Country.toFutureGuardianWeeklyProductId(account.soldToContact.country) match {
-      case Config.Zuora.guardianWeeklyDomesticProductId => newGuardianWeeklyProductCatalogue.domestic
-      case Config.Zuora.guardianWeeklyRowProductId => newGuardianWeeklyProductCatalogue.restOfTheWorld
-    }
+    val currentGuardianWeeklySubscription = CurrentGuardianWeeklySubscription(subscription, account)
+    val futureGuardianWeeklyProducts = GuardianWeeklyProduct(currentGuardianWeeklySubscription, newGuardianWeeklyProductCatalogue)
 
     val (_, unsatisfied) = List[(PriceRisePreCondition, Boolean)](
       SubscriptionIsAutoRenewable -> subscription.autoRenew,
       SubscriptionIsActive -> (subscription.status == "Active"),
       DeliveryRegionMatchesCurrency -> (Country.toCurrency(account.soldToContact.country) == account.billingAndPayment.currency),
-      PriceRiseDateIsOnInvoicedPeriodEndDate -> currentSubscription.invoicedPeriod.endDateExcluding.isEqual(priceRise.priceRiseDate),
-      ImportHasCorrectCurrentPrice -> (currentSubscription.price == priceRise.currentPrice),
+      PriceRiseDateIsOnInvoicedPeriodEndDate -> currentGuardianWeeklySubscription.invoicedPeriod.endDateExcluding.isEqual(priceRise.priceRiseDate),
+      ImportHasCorrectCurrentPrice -> (currentGuardianWeeklySubscription.price == priceRise.currentPrice),
       TargetPriceRiseIsNotMoreThanTheCap -> (priceRise.currentPrice * Config.priceRiseFactorCap <= priceRise.newPrice),
-      TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice -> (DefaultCataloguePrice(futureGuardianWeeklyProducts, currentSubscription) == priceRise.newPrice),
+      TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice -> (DefaultCataloguePrice(futureGuardianWeeklyProducts, currentGuardianWeeklySubscription) == priceRise.newPrice),
+      // TODO: Implement rest of pre-conditions
     ).partition(_._2)
 
     unsatisfied.map(_._1)

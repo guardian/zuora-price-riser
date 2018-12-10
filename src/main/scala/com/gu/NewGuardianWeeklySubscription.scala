@@ -1,8 +1,5 @@
 package com.gu
 
-import com.gu.FileImporter.PriceRise
-import org.joda.time.LocalDate
-
 /**
   * Model representing subscription after the price rise.
   */
@@ -15,16 +12,16 @@ case class NewGuardianWeeklySubscription(
   productRatePlanChargeId: String
 )
 
-object DefaultCataloguePrice extends ((List[GuardianWeeklyProduct], CurrentGuardianWeeklySubscription) => Float) {
+object DefaultCataloguePrice {
   def apply(
-      guardianWeeklyProducts: List[GuardianWeeklyProduct],
+      guardianWeeklyProduct: GuardianWeeklyProduct,
       currentGuardianWeeklySubscription: CurrentGuardianWeeklySubscription
   ): Float = {
-    guardianWeeklyProducts
-      .find(_.billingPeriod == currentGuardianWeeklySubscription.billingPeriod)
-      .flatMap(_.pricing.find(_.currency == currentGuardianWeeklySubscription.currency))
+    guardianWeeklyProduct
+      .pricing
+      .find(_.currency == currentGuardianWeeklySubscription.currency)
       .map(_.price)
-      .getOrElse(throw new AssertionError(s"Guardian Weekly product should have a default price: $guardianWeeklyProducts, $currentGuardianWeeklySubscription"))
+      .getOrElse(throw new RuntimeException(s"Guardian Weekly product should have a default price: $guardianWeeklyProduct, $currentGuardianWeeklySubscription"))
   }
 }
 
@@ -79,6 +76,25 @@ case class GuardianWeeklyProduct(
 ) {
   require(taxCode == s"Guardian Weekly", s"Product must be Guardian Weekly: ${pprint.apply(this)}")
   require(List("Quarter", "Annual").contains(billingPeriod), s"Guardian Weekly must be Quarterly or Annual: ${pprint.apply(this)}")
+}
+
+/**
+  * Find new GuardianWeeklyProduct using billingPeriod and delivery country.
+  */
+object GuardianWeeklyProduct {
+  def apply(
+      currentGuardianWeeklySubscription: CurrentGuardianWeeklySubscription,
+      newGuardianWeeklyProductCatalogue: NewGuardianWeeklyProductCatalogue
+  ): GuardianWeeklyProduct = {
+
+    (Country.toFutureGuardianWeeklyProductId(currentGuardianWeeklySubscription.country) match {
+      case Config.Zuora.guardianWeeklyDomesticProductId => newGuardianWeeklyProductCatalogue.domestic
+      case Config.Zuora.guardianWeeklyRowProductId => newGuardianWeeklyProductCatalogue.restOfTheWorld
+    })
+      .find(_.billingPeriod == currentGuardianWeeklySubscription.billingPeriod)
+      .getOrElse(throw new RuntimeException(s"${currentGuardianWeeklySubscription.subscriptionNumber} failed to determine new GuardianWeeklyProduct"))
+
+  }
 }
 
 /**
