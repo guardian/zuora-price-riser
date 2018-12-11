@@ -19,4 +19,11 @@ Script to rise the price of Guardian Weekly subscriptions on Annual and Quarterl
     ```
 3. Tail the logs: `tail -f logs/application.log`
 
+## Errors handling
+
+Script is designed to stop on first error it encounters. After the error:
+  1. examine the logs to determine the cause,
+  2. fix the cause
+  3. re-run the script (the script should be idempotent)
+
 
