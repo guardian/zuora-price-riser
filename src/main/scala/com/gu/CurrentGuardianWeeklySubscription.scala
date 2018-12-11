@@ -29,7 +29,8 @@ case class CurrentGuardianWeeklySubscription(
   currency: String,
   country: String,
   invoicedPeriod: CurrentInvoicedPeriod,
-  ratePlanId: String
+  ratePlanId: String,
+  productRatePlanId: String
 )
 
 /**
@@ -89,7 +90,8 @@ object CurrentGuardianWeeklySubscription {
           invoicedPeriod = CurrentInvoicedPeriod(
             startDateIncluding = currentGuardianWeeklyRatePlan.ratePlanCharges.head.processedThroughDate.get,
             endDateExcluding = currentGuardianWeeklyRatePlan.ratePlanCharges.head.chargedThroughDate.get),
-          ratePlanId = currentGuardianWeeklyRatePlan.id
+          ratePlanId = currentGuardianWeeklyRatePlan.id,
+          productRatePlanId = currentGuardianWeeklyRatePlan.productRatePlanId
         )
       }.getOrElse(throw new RuntimeException(s"Subscription does not have a current Guardian Weekly rate plan: ${pprint.apply(subscription)}; ${pprint.apply(account)}"))
 }

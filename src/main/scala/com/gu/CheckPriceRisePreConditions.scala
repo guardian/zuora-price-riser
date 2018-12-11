@@ -10,7 +10,6 @@ case object PriceRiseDateIsOnInvoicedPeriodEndDate extends PriceRisePreCondition
 case object ImportHasCorrectCurrentPrice extends PriceRisePreCondition
 case object TargetPriceRiseIsNotMoreThanTheCap extends PriceRisePreCondition
 case object TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice extends PriceRisePreCondition
-case object TargetPriceRiseIsNotLessThanOrEqualToTheCurrentPrice extends PriceRisePreCondition
 case object TargetPriceRiseIsMoreThanTheCurrentPrice extends PriceRisePreCondition
 case object ThereDoesNotExistAFutureAmendmentOnThePriceRiseDate extends PriceRisePreCondition
 case object CurrentlyActiveProductRatePlanIsGuardianWeeklyRatePlan extends PriceRisePreCondition
@@ -41,8 +40,12 @@ object CheckPriceRisePreConditions {
       PriceRiseDateIsOnInvoicedPeriodEndDate -> currentGuardianWeeklySubscription.invoicedPeriod.endDateExcluding.isEqual(priceRise.priceRiseDate),
       ImportHasCorrectCurrentPrice -> (currentGuardianWeeklySubscription.price == priceRise.currentPrice),
       TargetPriceRiseIsNotMoreThanTheCap -> (priceRise.currentPrice * Config.priceRiseFactorCap <= priceRise.newPrice),
-      TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice -> (DefaultCataloguePrice(futureGuardianWeeklyProducts, currentGuardianWeeklySubscription) == priceRise.newPrice),
-      // TODO: Implement rest of pre-conditions
+      TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice -> (priceRise.newPrice <= DefaultCataloguePrice(futureGuardianWeeklyProducts, currentGuardianWeeklySubscription)),
+      TargetPriceRiseIsMoreThanTheCurrentPrice -> (priceRise.newPrice > currentGuardianWeeklySubscription.price),
+      CurrentlyActiveProductRatePlanIsGuardianWeeklyRatePlan -> Config.Zuora.guardianWeeklyProductRatePlanIds.contains(currentGuardianWeeklySubscription.productRatePlanId),
+      BillingPeriodIsQuarterlyOrAnnually -> List("Annual", "Quarter").contains(currentGuardianWeeklySubscription.billingPeriod),
+      ThereDoesNotExistAFutureAmendmentOnThePriceRiseDate -> true, // TODO: Implement ThereDoesNotExistAFutureAmendmentOnThePriceRiseDate
+      TargetPriceRiseIsNotLessThanCataloguePriceWhenRemovingAllDiscountRatePlans -> true, // TODO: Implement TargetPriceRiseIsNotLessThanCataloguePriceWhenRemovingAllDiscountRatePlans
     ).partition(_._2)
 
     unsatisfied.map(_._1)
