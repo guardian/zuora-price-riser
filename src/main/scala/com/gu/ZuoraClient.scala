@@ -217,7 +217,27 @@ object ZuoraClient extends ZuoraJsonFormats {
       case 200 => parse(response.body).extract[PriceRiseResponse]
       case _ => throw new RuntimeException(s"$subscriptionName failed to raise price due to Zuora networking issue: $response")
     }
+  }
 
+  case class ExtendTerm(
+    currentTerm: String,
+    currentTermPeriodType: String
+  )
+
+  def extendTerm(
+    subscriptionName: String,
+    body: ExtendTerm): PriceRiseResponse = {
+    val response = Http(s"$host/v1/subscriptions/$subscriptionName")
+      .method("PUT")
+      .header("Authorization", s"Bearer $accessToken")
+      .header("content-type", "application/json")
+      .postData(write(body))
+      .asString
+
+    response.code match {
+      case 200 => parse(response.body).extract[PriceRiseResponse]
+      case _ => throw new RuntimeException(s"$subscriptionName failed to raise price due to Zuora networking issue: $response")
+    }
   }
 }
 

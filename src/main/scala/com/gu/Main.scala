@@ -40,14 +40,15 @@ object Main extends App with LazyLogging {
       if (PriceRiseAlreadyApplied(subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue)) {
         logger.info(s"${priceRise.subscriptionName} skipped because price rise already applied")
       } else {
-        // **************************************************************************************************************
+        // ************************************************************************************************************
         // 3. MUTATE
-        // **************************************************************************************************************
+        // ************************************************************************************************************
+        ExtendTermBuilder(subscriptionBefore, currentSubscription).map(extendTerm => ZuoraClient.extendTerm(priceRise.subscriptionName, extendTerm))
         val priceRiseResponse = ZuoraClient.removeAndAddAProductRatePlan(priceRise.subscriptionName, priceRiseRequest)
 
-        // **************************************************************************************************************
+        // ************************************************************************************************************
         // 4. CHECK POST-CONDITIONS
-        // **************************************************************************************************************
+        // ************************************************************************************************************
         if (!priceRiseResponse.success)
           Abort(s"Failed price rise request for ${priceRise.subscriptionName}: $priceRiseResponse")
         val subscriptionAfter = ZuoraClient.getSubscription(priceRise.subscriptionName)
@@ -57,9 +58,9 @@ object Main extends App with LazyLogging {
           Abort(s"${priceRise.subscriptionName} failed because of unsatisfied post-conditions: $unsatisfiedPostConditions")
         val newGuardianWeeklySubscription = NewGuardianWeeklySubscription(subscriptionAfter, accountAfter, newGuardianWeeklyProductCatalogue)
 
-        // **************************************************************************************************************
+        // ************************************************************************************************************
         // 5. LOG SUCCESS
-        // **************************************************************************************************************
+        // ************************************************************************************************************
         logger.info(s"${priceRise.subscriptionName} successfully applied price rise: $newGuardianWeeklySubscription")
       }
   }
