@@ -39,7 +39,7 @@ object CheckPriceRisePreConditions {
       DeliveryRegionMatchesCurrency -> (Country.toCurrency(account.soldToContact.country) == account.billingAndPayment.currency),
       PriceRiseDateIsOnInvoicedPeriodEndDate -> currentGuardianWeeklySubscription.invoicedPeriod.endDateExcluding.isEqual(priceRise.priceRiseDate),
       ImportHasCorrectCurrentPrice -> (currentGuardianWeeklySubscription.price == priceRise.currentPrice),
-      TargetPriceRiseIsNotMoreThanTheCap -> (priceRise.currentPrice * Config.priceRiseFactorCap <= priceRise.newPrice),
+      TargetPriceRiseIsNotMoreThanTheCap -> (priceRise.newPrice <= priceRise.currentPrice * Config.priceRiseFactorCap),
       TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice -> (priceRise.newPrice <= DefaultCataloguePrice(futureGuardianWeeklyProducts, currentGuardianWeeklySubscription)),
       TargetPriceRiseIsMoreThanTheCurrentPrice -> (priceRise.newPrice > currentGuardianWeeklySubscription.price),
       CurrentlyActiveProductRatePlanIsGuardianWeeklyRatePlan -> Config.Zuora.guardianWeeklyProductRatePlanIds.contains(currentGuardianWeeklySubscription.productRatePlanId),
