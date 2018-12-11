@@ -9,8 +9,11 @@ import com.typesafe.scalalogging.LazyLogging
 object Main extends App with LazyLogging {
   if (args.length == 0)
     Abort("Please provide import filename")
+  val filename = args(0)
 
-  FileImporter.importCsv(filename = args(0)).foreach {
+  logger.info(s"Start processing $filename...")
+
+  FileImporter.importCsv(filename).foreach {
     case Left(importError) =>
       Abort(s"Bad import file: $importError")
 
@@ -61,6 +64,6 @@ object Main extends App with LazyLogging {
       }
   }
 
-  logger.info("Successfully completed.")
+  logger.info(s"Successfully completed $filename")
 }
 
