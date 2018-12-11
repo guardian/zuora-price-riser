@@ -7,7 +7,10 @@ import com.typesafe.scalalogging.LazyLogging
   * It is safe to re-run the script on same input file.
   */
 object Main extends App with LazyLogging {
-  FileImporter.importCsv().foreach {
+  if (args.length == 0)
+    Abort("Please provide import filename")
+
+  FileImporter.importCsv(filename = args(0)).foreach {
     case Left(importError) =>
       Abort(s"Bad import file: $importError")
 

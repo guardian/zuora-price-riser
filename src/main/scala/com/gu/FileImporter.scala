@@ -42,10 +42,7 @@ object FileImporter {
     termEndDate: term_end_date
   )
 
-  private lazy val csvReader: CsvReader[ReadResult[PriceRise]] =
-    new File("subs.csv").asCsvReader[PriceRise](rfc.withHeader)
-
-  def importCsv(filename: String = "subs.scv"): CsvReader[ReadResult[PriceRise]] =
-    csvReader
+  def importCsv(filename: String = "subs.csv"): CsvReader[ReadResult[PriceRise]] =
+    new File(filename).asCsvReader[PriceRise](rfc.withHeader)
 
 }
