@@ -59,7 +59,8 @@ object Main extends App with LazyLogging {
         // **************************************************************************************************************
         logger.info(s"${priceRise.subscriptionName} successfully applied price rise: $newGuardianWeeklySubscription")
       }
-
   }
+
+  logger.info("Successfully completed.")
 }
 

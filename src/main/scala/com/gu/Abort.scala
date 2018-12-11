@@ -14,6 +14,7 @@ import com.typesafe.scalalogging.LazyLogging
 object Abort extends LazyLogging {
   def apply(errorMessage: String): Unit = {
     logger.error(errorMessage)
+    logger.error("Aborted due to error. Please examine the logs, fix the error, and re-run the script.")
     System.exit(1)
   }
 }
