@@ -7,7 +7,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.io.Source
 
-class ExtendTermSpec extends FlatSpec with Matchers with ZuoraJsonFormats {
+class ExtendTermRequestBuilderSpec extends FlatSpec with Matchers with ZuoraJsonFormats {
   DateTimeUtils.setCurrentMillisFixed(Instant.parse("2018-12-15").getMillis)
   val subscriptionRaw = Source.fromURL(getClass.getResource("/subscription-valid.json")).mkString
   val accountRaw = Source.fromURL(getClass.getResource("/account-valid.json")).mkString
@@ -16,21 +16,21 @@ class ExtendTermSpec extends FlatSpec with Matchers with ZuoraJsonFormats {
   val currentGuardianWeeklySubscription = CurrentGuardianWeeklySubscription(subscription, account)
 
   "ExtendTerm" should "should be created if subscription is annual and invoiced period is outside term" in {
-    ExtendTermBuilder(
+    ExtendTermRequestBuilder(
       subscription,
       currentGuardianWeeklySubscription
     ) should be (Some(ExtendTerm((365 + 11).toString, "Day"))) // "chargedThroughDate": "2019-12-14", "termEndDate": "2019-12-03",
   }
 
   it should "not extend term if subscription is quarterly" in {
-    ExtendTermBuilder(
+    ExtendTermRequestBuilder(
       subscription,
       currentGuardianWeeklySubscription.copy(billingPeriod = "Quarter")
     ) should be (None)
   }
 
   it should "not extend term if invoice period end date is equal to term end date" in {
-    ExtendTermBuilder(
+    ExtendTermRequestBuilder(
       subscription,
       currentGuardianWeeklySubscription.copy(
         invoicedPeriod = currentGuardianWeeklySubscription.invoicedPeriod.copy(endDateExcluding = subscription.termEndDate)

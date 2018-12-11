@@ -8,9 +8,9 @@ case object BillingTermIsAnnual extends ExtendTermPreCondition
 case object TermEndDateIsBeforeInvoicePeriodEndDate extends ExtendTermPreCondition
 
 /**
-  * Optionally extend term if subscriptions is annual and invoice period is outside term.
+  * Optionally extend term if subscriptions is annual and invoice period is beyond term end date.
   */
-object ExtendTermBuilder {
+object ExtendTermRequestBuilder {
   def apply(
       subscription: Subscription,
       currentGuardianWeeklySubscription: CurrentGuardianWeeklySubscription
@@ -22,10 +22,8 @@ object ExtendTermBuilder {
     ).partition(_._2)
 
     if (unsatisfied.isEmpty) {
-      val extensionInDays: Int = Days.daysBetween(
-        subscription.termEndDate,
-        currentGuardianWeeklySubscription.invoicedPeriod.endDateExcluding
-      ).getDays
+      val extensionInDays =
+        Days.daysBetween(subscription.termEndDate, currentGuardianWeeklySubscription.invoicedPeriod.endDateExcluding).getDays
 
       Some(ExtendTerm(
         currentTerm = (365 + extensionInDays).toString,

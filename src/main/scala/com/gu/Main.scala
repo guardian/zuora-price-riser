@@ -26,6 +26,7 @@ object Main extends App with LazyLogging {
       val accountBefore = ZuoraClient.getAccount(subscriptionBefore.accountNumber)
       val currentSubscription = CurrentGuardianWeeklySubscription(subscriptionBefore, accountBefore)
       val priceRiseRequest = PriceRiseRequestBuilder(subscriptionBefore, currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
+      val extendTermRequestOpt = ExtendTermRequestBuilder(subscriptionBefore, currentSubscription)
 
       // **************************************************************************************************************
       // 2. CHECK PRE-CONDITIONS
@@ -43,7 +44,7 @@ object Main extends App with LazyLogging {
         // ************************************************************************************************************
         // 3. MUTATE
         // ************************************************************************************************************
-        ExtendTermBuilder(subscriptionBefore, currentSubscription).map(extendTerm => ZuoraClient.extendTerm(priceRise.subscriptionName, extendTerm))
+        extendTermRequestOpt.map(extendTerm => ZuoraClient.extendTerm(priceRise.subscriptionName, extendTerm))
         val priceRiseResponse = ZuoraClient.removeAndAddAProductRatePlan(priceRise.subscriptionName, priceRiseRequest)
 
         // ************************************************************************************************************
