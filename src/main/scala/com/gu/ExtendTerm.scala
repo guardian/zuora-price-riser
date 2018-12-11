@@ -23,7 +23,7 @@ object ExtendTermBuilder {
 
     if (unsatisfied.isEmpty) {
       val extensionInDays: Int = Days.daysBetween(
-        subscription.termEndDate(),
+        subscription.termEndDate,
         currentGuardianWeeklySubscription.invoicedPeriod.endDateExcluding
       ).getDays
 
