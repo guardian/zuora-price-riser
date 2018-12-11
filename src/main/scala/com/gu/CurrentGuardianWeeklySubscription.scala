@@ -8,7 +8,6 @@ import scala.util.Try
   */
 sealed trait CurrentGuardianWeeklyRatePlanCondition
 case object RatePlanIsGuardianWeekly extends CurrentGuardianWeeklyRatePlanCondition
-case object RatePlanHasNotBeenRemoved extends CurrentGuardianWeeklyRatePlanCondition
 case object TodayHasBeenInvoiced extends CurrentGuardianWeeklyRatePlanCondition // FIXME: Invoiced raised today but after running the script?
 case object RatePlanHasACharge extends CurrentGuardianWeeklyRatePlanCondition
 case object RatePlanHasOnlyOneCharge extends CurrentGuardianWeeklyRatePlanCondition
@@ -66,7 +65,6 @@ object CurrentGuardianWeeklySubscription {
       .find { ratePlan =>
         List[(CurrentGuardianWeeklyRatePlanCondition, Boolean)](
           RatePlanIsGuardianWeekly -> Config.Zuora.guardianWeeklyProductRatePlanIds.contains(ratePlan.productRatePlanId),
-          RatePlanHasNotBeenRemoved -> (ratePlan.lastChangeType.isEmpty || !ratePlan.lastChangeType.contains("Remove")),
           RatePlanHasACharge -> ratePlan.ratePlanCharges.nonEmpty,
           RatePlanHasOnlyOneCharge -> (ratePlan.ratePlanCharges.size == 1),
           TodayHasBeenInvoiced ->
