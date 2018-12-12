@@ -207,10 +207,10 @@ object ZuoraClient extends ZuoraJsonFormats {
       subscriptionName: String,
       body: PriceRiseRequest): PriceRiseResponse = {
     val response = Http(s"$host/v1/subscriptions/$subscriptionName")
-      .method("PUT")
       .header("Authorization", s"Bearer $accessToken")
       .header("content-type", "application/json")
       .postData(write(body))
+      .method("PUT")
       .asString
 
     response.code match {
@@ -228,10 +228,10 @@ object ZuoraClient extends ZuoraJsonFormats {
     subscriptionName: String,
     body: ExtendTerm): PriceRiseResponse = {
     val response = Http(s"$host/v1/subscriptions/$subscriptionName")
-      .method("PUT")
       .header("Authorization", s"Bearer $accessToken")
       .header("content-type", "application/json")
       .postData(write(body))
+      .method("PUT")
       .asString
 
     response.code match {

@@ -28,10 +28,9 @@ Script is designed to stop on first error it encounters. After the error:
 Example error log:
 
 ```
-[info] Running com.gu.Main subs.csv
-2018-12-11 16:22:38,316 [INFO] from com.gu.Main$ in sbt-bg-threads-1 - Start processing subs.csv...
-2018-12-11 16:22:41,618 [ERROR] from com.gu.Abort$ in sbt-bg-threads-1 - A-S00048031 failed because of unsatisfied pre-conditions: List(ImportHasCorrectCurrentPrice, TargetPriceRiseIsNotMoreThanTheCap)
-2018-12-11 16:22:41,618 [ERROR] from com.gu.Abort$ in sbt-bg-threads-1 - Aborted due to error. Please examine the logs, fix the error, and re-run the script.
+2018-12-11 16:22:38,316 [INFO] - Start processing subs.csv...
+2018-12-11 16:22:41,618 [ERROR] - A-S00048031 failed because of unsatisfied pre-conditions: List(ImportHasCorrectCurrentPrice, TargetPriceRiseIsNotMoreThanTheCap)
+2018-12-11 16:22:41,618 [ERROR] - Aborted due to error. Please examine the logs, fix the error, and re-run the script.
 ```
 
 
