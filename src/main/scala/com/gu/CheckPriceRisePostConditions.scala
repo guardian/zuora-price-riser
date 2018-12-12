@@ -41,7 +41,6 @@ object CheckPriceRisePostConditions {
       NewGuardianWeeklyRatePlanHasOnlyOneCharge -> Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.size == 1).getOrElse(false),
       CustomerAcceptanceDateIsOnTheBeginningOfNextInvoicePeriod ->
         List(
-          subscriptionAfter.customerAcceptanceDate.isEqual(priceRise.priceRiseDate),
           Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.head.effectiveStartDate.isEqual(priceRise.priceRiseDate)).getOrElse(false),
           Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.head.effectiveStartDate.isAfter(LocalDate.now())).getOrElse(false)
         ).forall(_ == true),
