@@ -13,7 +13,6 @@ case object TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice extend
 case object TargetPriceRiseIsMoreThanTheCurrentPrice extends PriceRisePreCondition
 case object ThereDoesNotExistAFutureAmendmentOnThePriceRiseDate extends PriceRisePreCondition
 case object CurrentlyActiveProductRatePlanIsGuardianWeeklyRatePlan extends PriceRisePreCondition
-case object TargetPriceRiseIsNotLessThanCataloguePriceWhenRemovingAllDiscountRatePlans extends PriceRisePreCondition
 case object BillingPeriodIsQuarterlyOrAnnually extends PriceRisePreCondition
 
 /**
@@ -45,7 +44,6 @@ object CheckPriceRisePreConditions {
       CurrentlyActiveProductRatePlanIsGuardianWeeklyRatePlan -> Config.Zuora.guardianWeeklyProductRatePlanIds.contains(currentGuardianWeeklySubscription.productRatePlanId),
       BillingPeriodIsQuarterlyOrAnnually -> List("Annual", "Quarter").contains(currentGuardianWeeklySubscription.billingPeriod),
       ThereDoesNotExistAFutureAmendmentOnThePriceRiseDate -> true, // TODO: Implement ThereDoesNotExistAFutureAmendmentOnThePriceRiseDate
-      TargetPriceRiseIsNotLessThanCataloguePriceWhenRemovingAllDiscountRatePlans -> true, // TODO: Implement TargetPriceRiseIsNotLessThanCataloguePriceWhenRemovingAllDiscountRatePlans
     ).partition(_._2)
 
     unsatisfied.map(_._1)
