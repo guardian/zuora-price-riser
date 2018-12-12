@@ -13,7 +13,7 @@ case object OldRatePlanIsRemoved extends PriceRisePostCondition
 case object HolidaysAndRetentionDiscountsWereNotRemoved extends PriceRisePostCondition
 case object CurrencyDidNotChange extends PriceRisePostCondition
 case object PriceHasBeenRaised extends PriceRisePostCondition
-case object AccountDidNotChange extends PriceRisePostCondition
+case object DeliveryCountryDidNotChange extends PriceRisePostCondition
 
 /**
   * Checks post-conditions after the price rise has been writen to Zuora.
@@ -57,7 +57,7 @@ object CheckPriceRisePostConditions {
           .exists(_.productRatePlanId == currentGuardianWeeklySubscription.productRatePlanId),
       CurrencyDidNotChange -> Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.head.currency == accountBefore.billingAndPayment.currency).getOrElse(false),
       PriceHasBeenRaised -> Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.head.price == priceRise.newPrice).getOrElse(false),
-      AccountDidNotChange -> true // TODO:
+      DeliveryCountryDidNotChange -> (accountBefore.soldToContact.country == accountAfter.soldToContact.country),
     ).partition(_._2)
 
     unsatisfied.map(_._1)
