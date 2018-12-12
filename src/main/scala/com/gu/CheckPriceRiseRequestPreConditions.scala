@@ -4,7 +4,6 @@ trait PriceRiseRequestPreCondition
 case object OldRatePlanShouldBeRemovedOnTheSameDateAsTheNewRatePlanIsAdded extends PriceRiseRequestPreCondition
 case object PriceIsWithinReasonableBounds extends PriceRiseRequestPreCondition
 case object SingleRatePlanIsAdded extends PriceRiseRequestPreCondition
-case object HolidayAndRetentionDiscountRatePlansShouldNotBeRemoved extends PriceRiseRequestPreCondition
 
 /**
   * Checks pre-conditions on the Zuora API request body before serialization to JSON.
@@ -21,7 +20,6 @@ object CheckPriceRiseRequestPreConditions {
       OldRatePlanShouldBeRemovedOnTheSameDateAsTheNewRatePlanIsAdded -> (request.remove.head.contractEffectiveDate == request.add.head.contractEffectiveDate),
       PriceIsWithinReasonableBounds -> (request.add.head.chargeOverrides.get.head.price > currentGuardianWeeklySubscription.price),
       SingleRatePlanIsAdded -> (request.add.size == 1),
-      HolidayAndRetentionDiscountRatePlansShouldNotBeRemoved -> true, // TODO: Implement HolidayAndRetentionDiscountRatePlansShouldNotBeRemoved - request.remove.map(_.) Config.Zuora.doNotRemoveProductRatePlanIds.contains
     ).partition(_._2)
 
     unsatisfied.map(_._1)
