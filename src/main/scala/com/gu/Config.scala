@@ -5,9 +5,9 @@ import com.typesafe.config.ConfigFactory
 object Config {
   private val conf = ConfigFactory.load
   object Zuora {
-    val stage: String = conf.getString("zuora.stage")
-    val client_id: String = conf.getString("zuora.client_id")
-    val client_secret: String = conf.getString("zuora.client_secret")
+    lazy val stage: String = conf.getString("zuora.stage")
+    lazy val client_id: String = conf.getString("zuora.client_id")
+    lazy val client_secret: String = conf.getString("zuora.client_secret")
 
     /**
         Contains list of all Product Rate Plan IDs for Guardian Weekly obtained manually
