@@ -2,3 +2,4 @@
 target/
 logs/
 *.csv
+!src/test/resources/*.csv
