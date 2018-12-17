@@ -53,9 +53,7 @@ object CheckPriceRisePreConditions {
             .filter { ratePlan =>
               val effectiveStartDate = ratePlan.ratePlanCharges.head.effectiveStartDate
               effectiveStartDate.isEqual(priceRise.priceRiseDate) || effectiveStartDate.isAfter(priceRise.priceRiseDate)
-            }
-            .map(_.productRatePlanId)
-            .forall(List(guardianWeeklyDomesticProductId, guardianWeeklyRowProductId).contains)
+            }.isEmpty
         ).getOrElse(false),
     ).partition(_._2)
 

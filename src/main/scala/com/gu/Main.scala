@@ -19,28 +19,31 @@ object Main extends App with LazyLogging {
 
     case Right(priceRise) =>
       // **************************************************************************************************************
-      // 1. PREPARE DATA
+      // 1. GET CURRENT ZUORA DATA
       // **************************************************************************************************************
       val newGuardianWeeklyProductCatalogue = ZuoraClient.getNewGuardianWeeklyProductCatalogue()
       val subscriptionBefore = ZuoraClient.getSubscription(priceRise.subscriptionName)
       val accountBefore = ZuoraClient.getAccount(subscriptionBefore.accountNumber)
-      val currentSubscription = CurrentGuardianWeeklySubscription(subscriptionBefore, accountBefore)
-      val priceRiseRequest = PriceRiseRequestBuilder(subscriptionBefore, currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
-      val extendTermRequestOpt = ExtendTermRequestBuilder(subscriptionBefore, currentSubscription)
 
       // **************************************************************************************************************
       // 2. CHECK PRE-CONDITIONS
       // **************************************************************************************************************
-      val unsatisfiedPreConditions =
-        CheckPriceRisePreConditions(priceRise, subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue
-        ) ++ CheckPriceRiseRequestPreConditions(priceRiseRequest, currentSubscription)
-
-      if (unsatisfiedPreConditions.nonEmpty)
-        Abort(s"${priceRise.subscriptionName} failed because of unsatisfied pre-conditions: $unsatisfiedPreConditions")
 
       if (PriceRiseAlreadyApplied(subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue)) {
         logger.info(s"${priceRise.subscriptionName} skipped because price rise already applied")
       } else {
+
+        val currentSubscription = CurrentGuardianWeeklySubscription(subscriptionBefore, accountBefore)
+        val priceRiseRequest = PriceRiseRequestBuilder(subscriptionBefore, currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
+        val extendTermRequestOpt = ExtendTermRequestBuilder(subscriptionBefore, currentSubscription)
+
+        val unsatisfiedPreConditions =
+          CheckPriceRisePreConditions(priceRise, subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue
+          ) ++ CheckPriceRiseRequestPreConditions(priceRiseRequest, currentSubscription)
+
+        if (unsatisfiedPreConditions.nonEmpty)
+          Abort(s"${priceRise.subscriptionName} failed because of unsatisfied pre-conditions: $unsatisfiedPreConditions")
+
         // ************************************************************************************************************
         // 3. MUTATE
         // ************************************************************************************************************
