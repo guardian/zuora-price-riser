@@ -37,7 +37,6 @@ object CheckPriceRisePreConditions {
     val (_, unsatisfied) = List[(PriceRisePreCondition, Boolean)](
       SubscriptionIsAutoRenewable -> subscription.autoRenew,
       SubscriptionIsActive -> (subscription.status == "Active"),
-      DeliveryRegionMatchesCurrency -> (Country.toCurrency(account.soldToContact.country) == account.billingAndPayment.currency),
       PriceRiseDateIsOnInvoicedPeriodEndDate -> currentGuardianWeeklySubscription.invoicedPeriod.endDateExcluding.isEqual(priceRise.priceRiseDate),
       ImportHasCorrectCurrentPrice -> (currentGuardianWeeklySubscription.price == priceRise.currentPrice),
       TargetPriceRiseIsNotMoreThanTheCap -> (priceRise.newPrice <= priceRise.currentPrice * Config.priceRiseFactorCap),
