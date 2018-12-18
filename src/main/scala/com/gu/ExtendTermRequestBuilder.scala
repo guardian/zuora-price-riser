@@ -4,7 +4,6 @@ import com.gu.ZuoraClient.ExtendTerm
 import org.joda.time.Days
 
 sealed trait ExtendTermPreCondition
-case object BillingTermIsAnnual extends ExtendTermPreCondition
 case object TermEndDateIsBeforeInvoicePeriodEndDate extends ExtendTermPreCondition
 
 /**
@@ -17,7 +16,6 @@ object ExtendTermRequestBuilder {
   ): Option[ExtendTerm] = {
 
     val (_, unsatisfied) = List(
-      BillingTermIsAnnual -> (currentGuardianWeeklySubscription.billingPeriod == "Annual"),
       TermEndDateIsBeforeInvoicePeriodEndDate -> subscription.termEndDate.isBefore(currentGuardianWeeklySubscription.invoicedPeriod.endDateExcluding)
     ).partition(_._2)
 

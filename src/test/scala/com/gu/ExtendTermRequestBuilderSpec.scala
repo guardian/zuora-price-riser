@@ -15,18 +15,11 @@ class ExtendTermRequestBuilderSpec extends FlatSpec with Matchers with ZuoraJson
   val account = parse(accountRaw).extract[Account]
   val currentGuardianWeeklySubscription = CurrentGuardianWeeklySubscription(subscription, account)
 
-  "ExtendTerm" should "should be created if subscription is annual and invoiced period is outside term" in {
+  "ExtendTerm" should "should be created if invoiced period is outside term" in {
     ExtendTermRequestBuilder(
       subscription,
       currentGuardianWeeklySubscription
     ) should be (Some(ExtendTerm((365 + 11).toString, "Day"))) // "chargedThroughDate": "2019-12-14", "termEndDate": "2019-12-03",
-  }
-
-  it should "not extend term if subscription is quarterly" in {
-    ExtendTermRequestBuilder(
-      subscription,
-      currentGuardianWeeklySubscription.copy(billingPeriod = "Quarter")
-    ) should be (None)
   }
 
   it should "not extend term if invoice period end date is equal to term end date" in {
