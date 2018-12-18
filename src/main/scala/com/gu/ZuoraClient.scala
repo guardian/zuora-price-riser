@@ -11,7 +11,7 @@ case class RatePlanCharge(
   id: String,
   productRatePlanChargeId: String,
   currency: String,
-  price: Float,
+  price: Option[Float],
   billingPeriod: String,
   effectiveStartDate: LocalDate,
   effectiveEndDate: LocalDate,

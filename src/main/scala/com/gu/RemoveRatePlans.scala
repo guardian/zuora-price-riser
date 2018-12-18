@@ -11,11 +11,13 @@ object RemoveRatePlans {
       currentGuardianWeeklySubscription: CurrentGuardianWeeklySubscription,
       priceRise: PriceRise
   ): List[RemoveRatePlan] = {
+
+    import Config.Zuora._
     val removeRatePlans: List[RemoveRatePlan] =
-      subscription.ratePlans
-        .map(_.id)
-        .filterNot(Config.Zuora.doNotRemoveProductRatePlanIds.contains)
-        .map(ratePlanId => RemoveRatePlan(ratePlanId, priceRise.priceRiseDate))
+      subscription
+        .ratePlans
+        .filterNot(ratePlan => doNotRemoveProductRatePlanIds.contains(ratePlan.productRatePlanId))
+        .map(ratePlan => RemoveRatePlan(ratePlan.id, priceRise.priceRiseDate))
 
     assert(removeRatePlans.map(_.ratePlanId).contains(currentGuardianWeeklySubscription.ratePlanId), "Current Guardian Weekly rate plan should be removed.")
     removeRatePlans

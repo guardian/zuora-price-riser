@@ -80,7 +80,7 @@ object CurrentGuardianWeeklySubscription {
         CurrentGuardianWeeklySubscription(
           subscriptionNumber = subscription.subscriptionNumber,
           billingPeriod = currentGuardianWeeklyRatePlan.ratePlanCharges.head.billingPeriod,
-          price = currentGuardianWeeklyRatePlan.ratePlanCharges.head.price,
+          price = currentGuardianWeeklyRatePlan.ratePlanCharges.head.price.get,
           currency = account.billingAndPayment.currency,
           country = account.soldToContact.country,
           invoicedPeriod = CurrentInvoicedPeriod(

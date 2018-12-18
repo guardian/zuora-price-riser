@@ -22,6 +22,7 @@ case object BillingPeriodIsQuarterlyOrAnnually extends PriceRisePreCondition
   */
 object CheckPriceRisePreConditions {
   type UnsatisfiedPriceRisePreConditions = List[PriceRisePreCondition]
+  import Config.Zuora._
 
   def apply(
       priceRise: PriceRise,
@@ -45,11 +46,14 @@ object CheckPriceRisePreConditions {
       BillingPeriodIsQuarterlyOrAnnually -> List("Annual", "Quarter").contains(currentGuardianWeeklySubscription.billingPeriod),
       ThereDoesNotExistAFutureAmendmentOnThePriceRiseDate ->
         Try {
-          val futureRatePlanExists = subscription.ratePlans.exists { ratePlan =>
+          subscription
+            .ratePlans
+            .filter { ratePlan =>
               val effectiveStartDate = ratePlan.ratePlanCharges.head.effectiveStartDate
               effectiveStartDate.isEqual(priceRise.priceRiseDate) || effectiveStartDate.isAfter(priceRise.priceRiseDate)
-          }
-          !futureRatePlanExists
+            }
+            .map(_.productRatePlanId)
+            .forall(doNotRemoveProductRatePlanIds.contains)
         }.getOrElse(false),
     ).partition(_._2)
 

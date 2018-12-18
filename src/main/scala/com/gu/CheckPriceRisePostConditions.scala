@@ -56,7 +56,7 @@ object CheckPriceRisePostConditions {
           .filter(_.lastChangeType.contains("Remove"))
           .exists(_.productRatePlanId == currentGuardianWeeklySubscription.productRatePlanId),
       CurrencyDidNotChange -> Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.head.currency == accountBefore.billingAndPayment.currency).getOrElse(false),
-      PriceHasBeenRaised -> Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.head.price == priceRise.newPrice).getOrElse(false),
+      PriceHasBeenRaised -> Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.head.price.get == priceRise.newPrice).getOrElse(false),
       DeliveryCountryDidNotChange -> (accountBefore.soldToContact.country == accountAfter.soldToContact.country),
     ).partition(_._2)
 
