@@ -7,7 +7,6 @@ import scala.util.Try
 trait PriceRisePreCondition
 case object SubscriptionIsAutoRenewable extends PriceRisePreCondition
 case object SubscriptionIsActive extends PriceRisePreCondition
-case object DeliveryRegionMatchesCurrency extends PriceRisePreCondition
 case object PriceRiseDateIsOnInvoicedPeriodEndDate extends PriceRisePreCondition
 case object ImportHasCorrectCurrentPrice extends PriceRisePreCondition
 case object TargetPriceRiseIsNotMoreThanTheCap extends PriceRisePreCondition
