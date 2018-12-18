@@ -30,7 +30,6 @@ object CheckPriceRisePreConditions {
       account: Account,
       newGuardianWeeklyProductCatalogue: NewGuardianWeeklyProductCatalogue
   ): UnsatisfiedPriceRisePreConditions = {
-    import Config.Zuora._
 
     val currentGuardianWeeklySubscription = CurrentGuardianWeeklySubscription(subscription, account)
     val futureGuardianWeeklyProducts = GuardianWeeklyProduct(currentGuardianWeeklySubscription, newGuardianWeeklyProductCatalogue)
@@ -46,15 +45,14 @@ object CheckPriceRisePreConditions {
       TargetPriceRiseIsMoreThanTheCurrentPrice -> (priceRise.newPrice > currentGuardianWeeklySubscription.price),
       CurrentlyActiveProductRatePlanIsGuardianWeeklyRatePlan -> Config.Zuora.guardianWeeklyProductRatePlanIds.contains(currentGuardianWeeklySubscription.productRatePlanId),
       BillingPeriodIsQuarterlyOrAnnually -> List("Annual", "Quarter").contains(currentGuardianWeeklySubscription.billingPeriod),
-      ThereDoesNotExistAFutureAmendmentOnThePriceRiseDate -> // TODO: Relax this after testing on PROD data
-        Try(
-          subscription
-            .ratePlans
-            .filter { ratePlan =>
+      ThereDoesNotExistAFutureAmendmentOnThePriceRiseDate ->
+        Try {
+          val futureRatePlanExists = subscription.ratePlans.exists { ratePlan =>
               val effectiveStartDate = ratePlan.ratePlanCharges.head.effectiveStartDate
               effectiveStartDate.isEqual(priceRise.priceRiseDate) || effectiveStartDate.isAfter(priceRise.priceRiseDate)
-            }.isEmpty
-        ).getOrElse(false),
+          }
+          !futureRatePlanExists
+        }.getOrElse(false),
     ).partition(_._2)
 
     unsatisfied.map(_._1)
