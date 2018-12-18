@@ -11,7 +11,7 @@ Script to rise the price of Guardian Weekly subscriptions on Annual and Quarterl
     export ZUORA_CLIENT_SECRET=**********
     export ZUORA_CLIENT_ID=**********
     ```
-2. Drop the import file at project root an run `Main.scala` with:
+2. Drop the import file at project root and run `Main.scala` with:
 
     ```
     sbt "run file.csv"
