@@ -2,7 +2,7 @@ package com.gu
 
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
-import scalaj.http.{Http, HttpResponse}
+import scalaj.http.{BaseHttp, Http, HttpOptions}
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.write
@@ -123,9 +123,17 @@ object ZuoraClient extends ZuoraJsonFormats {
   import ZuoraOauth._
   import ZuoraHostSelector._
 
+  object HttpWithLongTimeout extends BaseHttp(
+    options = Seq(
+      HttpOptions.connTimeout(5000),
+      HttpOptions.readTimeout(20000),
+      HttpOptions.followRedirects(false)
+    )
+  )
+
   def getSubscription(subscriptionName: String): Subscription = {
     val response =
-      Http(s"$host/v1/subscriptions/$subscriptionName")
+      HttpWithLongTimeout(s"$host/v1/subscriptions/$subscriptionName")
         .header("Authorization", s"Bearer $accessToken")
         .asString
         .body
@@ -137,7 +145,7 @@ object ZuoraClient extends ZuoraJsonFormats {
 
   def getAccount(accountNumber: String): Account = {
     val responseAccount =
-      Http(s"$host/v1/accounts/$accountNumber")
+      HttpWithLongTimeout(s"$host/v1/accounts/$accountNumber")
         .header("Authorization", s"Bearer $accessToken")
         .asString
         .body
@@ -148,7 +156,7 @@ object ZuoraClient extends ZuoraJsonFormats {
 
   def getProductRatePlans(productId: String): List[ProductRatePlan] = {
     val response =
-      Http(s"$host/v1/rateplan/$productId/productRatePlan")
+      HttpWithLongTimeout(s"$host/v1/rateplan/$productId/productRatePlan")
         .header("Authorization", s"Bearer $accessToken")
         .asString
         .body
@@ -206,7 +214,7 @@ object ZuoraClient extends ZuoraJsonFormats {
   def removeAndAddAProductRatePlan(
       subscriptionName: String,
       body: PriceRiseRequest): PriceRiseResponse = {
-    val response = Http(s"$host/v1/subscriptions/$subscriptionName")
+    val response = HttpWithLongTimeout(s"$host/v1/subscriptions/$subscriptionName")
       .header("Authorization", s"Bearer $accessToken")
       .header("content-type", "application/json")
       .postData(write(body))
@@ -227,7 +235,7 @@ object ZuoraClient extends ZuoraJsonFormats {
   def extendTerm(
     subscriptionName: String,
     body: ExtendTerm): PriceRiseResponse = {
-    val response = Http(s"$host/v1/subscriptions/$subscriptionName")
+    val response = HttpWithLongTimeout(s"$host/v1/subscriptions/$subscriptionName")
       .header("Authorization", s"Bearer $accessToken")
       .header("content-type", "application/json")
       .postData(write(body))
