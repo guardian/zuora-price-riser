@@ -4,6 +4,8 @@ Script to rise the price of Guardian Weekly subscriptions on Annual and Quarterl
 
 ## How to run
 
+Make sure to run the script after the bill run completes for the day. Currently bill run happens at 6 am and lasts around 3 hrs.
+
 1. The script requires [Zuora Oauth Authentication](https://knowledgecenter.zuora.com/CF_Users_and_Administrators/A_Administrator_Settings/Manage_Users#Create_an_OAuth_Client_for_a_User) credentials:
 
     ```

@@ -8,7 +8,7 @@ import scala.util.Try
   */
 sealed trait CurrentGuardianWeeklyRatePlanCondition
 case object RatePlanIsGuardianWeekly extends CurrentGuardianWeeklyRatePlanCondition
-case object TodayHasBeenInvoiced extends CurrentGuardianWeeklyRatePlanCondition // FIXME: Invoiced raised today but after running the script?
+case object TodayHasBeenInvoiced extends CurrentGuardianWeeklyRatePlanCondition
 case object RatePlanHasACharge extends CurrentGuardianWeeklyRatePlanCondition
 case object RatePlanHasOnlyOneCharge extends CurrentGuardianWeeklyRatePlanCondition
 case object ChargeIsQuarterlyOrAnnual extends CurrentGuardianWeeklyRatePlanCondition
@@ -18,8 +18,6 @@ case object ChargeIsQuarterlyOrAnnual extends CurrentGuardianWeeklyRatePlanCondi
   *
   * The idea is to have a single unified object as an answer to this question because Zuora's answer is
   * scattered across multiple objects such as Subscription, RatePlan, RatePlanCharge.
-  *
-  * FIXME: override flag?
   */
 case class CurrentGuardianWeeklySubscription(
   subscriptionNumber: String,
