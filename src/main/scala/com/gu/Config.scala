@@ -97,10 +97,9 @@ object Config {
           "2c92c0f862ceb7050162d393b0ff6df7", // "name":"Cancellation Save Discount - 50% off for 3 months"
         )
         case "PROD" | "prod" => List(
-          "" // TODO: Add prod stuff everywhere
-        )
-        case _ => List(
-          ""
+          "2c92a0fc5b42d2c9015b6259f7f40040", // "name":"Guardian Weekly Holiday Credit"
+          "2c92a0ff64176cd40164232c8ec97661", // "name":"Cancellation Save Discount - 25% off for 3 months"
+          "2c92a00864176ce90164232ac0d90fc1", // "name":"Cancellation Save Discount - 50% off for 3 months"
         )
       }
   }
