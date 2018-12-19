@@ -80,12 +80,10 @@ object Config {
         case _ => "2c92c0f865d272ef0165f14cc19d238a"
       }
 
-    // "2c92c0f965f2121e01660fb1f1057b1a", // "name":"Guardian Weekly - ROW"
     val guardianWeeklyRowProductId: String =
       Config.Zuora.stage match {
-        case "DEV" | "dev" => "2c92c0f965f2121e01660fb1f1057b1a"
-        case "PROD" | "prod" => ""
-        case _ => "2c92c0f965f2121e01660fb1f1057b1a"
+        case "DEV" | "dev" => "2c92c0f965f2121e01660fb1f1057b1a"    // "name":"Guardian Weekly - ROW"
+        case "PROD" | "prod" => "2c92a0fe6619b4b901661aaf826435de"  // "name":"Guardian Weekly - ROW"
       }
 
     // Do not remove Holiday and Retention Discounts (Cancellation Save Discount)
@@ -104,6 +102,7 @@ object Config {
       }
   }
 
+  // FIXME: add actual value
   val priceRiseFactorCap = 1.5 // cap is 50% rise
 
 
