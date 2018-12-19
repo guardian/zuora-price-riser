@@ -44,6 +44,7 @@ object NewGuardianWeeklySubscription {
 
     assert(newRatePlans.size == 1, "NewGuardianWeeklyRatePlanExists not satisfied")
     assert(newRatePlans.head.ratePlanCharges.size == 1, "NewGuardianWeeklyRatePlanHasOnlyOneCharge not satisfied ")
+    assert(newRatePlans.head.ratePlanCharges.head.price.isDefined, "Price should exist")
 
     val newRatePlan = newRatePlans.head
     val newRatePlanCharge = newRatePlan.ratePlanCharges.head
@@ -52,7 +53,7 @@ object NewGuardianWeeklySubscription {
 
     NewGuardianWeeklySubscription(
       subscriptionAfterPriceRise.subscriptionNumber,
-      newRatePlanCharge.price,
+      newRatePlanCharge.price.get,
       newRatePlanCharge.currency,
       accountAfterPriceRise.soldToContact.country,
       newProductRatePlanId,

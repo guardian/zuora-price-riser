@@ -88,15 +88,16 @@ object Config {
         case _ => "2c92c0f965f2121e01660fb1f1057b1a"
       }
 
-    // Do not remove Holiday and Retention Discounts
+    // Do not remove Holiday and Retention Discounts (Cancellation Save Discount)
     val doNotRemoveProductRatePlanIds: List[String] =
       Config.Zuora.stage match {
         case "DEV" | "dev" => List(
-          "2c92c0f9-6716-86a2-0167-1d14b5e5771e", // "name":"Guardian Weekly Holiday Credit"
-          "", // TODO: Add Retention Discounts
+          "2c92c0f9671686a201671d14b5e5771e", // "name":"Guardian Weekly Holiday Credit"
+          "2c92c0f962cec7990162d3882afc52dd", // "name":"Cancellation Save Discount - 25% off for 3 months"
+          "2c92c0f862ceb7050162d393b0ff6df7", // "name":"Cancellation Save Discount - 50% off for 3 months"
         )
         case "PROD" | "prod" => List(
-          ""
+          "" // TODO: Add prod stuff everywhere
         )
         case _ => List(
           ""
