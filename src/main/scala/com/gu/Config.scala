@@ -44,14 +44,21 @@ object Config {
         "2c92c0f965f2122101660fb81b745a06", // "name":"GW Oct 18 - Quarterly - ROW"
       )
 
-      val prod = List(
-        "",
-      )
-
       Config.Zuora.stage match {
         case "DEV" | "dev" => dev
-        case "PROD" | "prod" => prod
-        case _ => dev
+        case "PROD" | "prod" => List(
+          // Product: {"id":"2c92a0fd-57d0-a987-0157-d73fa27c3de1","name":"Guardian Weekly Zone A"}
+          "2c92a0fd57d0a9870157d7412f19424f", // "name":"Guardian Weekly Quarterly"
+          "2c92a0ff57d0a0b60157d741e722439a", // "name":"Guardian Weekly Annual"
+
+          // Product: {"id":"2c92a0fe-57d0-a0c4-0157-d74240d35541","name":"Guardian Weekly Zone B"}
+          "2c92a0fe57d0a0c40157d74241005544", // "name":"Guardian Weekly Quarterly"
+          "2c92a0fe57d0a0c40157d74240de5543", // "name":"Guardian Weekly Annual"
+
+          // Product: {"id":"2c92a0ff-58bd-f4eb-0158-f307ecc102ad","name":"Guardian Weekly Zone C"}
+          "2c92a0ff58bdf4eb0158f307ed0e02be", // "name":"Guardian Weekly Quarterly"
+          "2c92a0ff58bdf4eb0158f307eccf02af", // "name":"Guardian Weekly Annual"
+        )
       }
     }
 
