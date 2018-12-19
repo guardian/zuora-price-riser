@@ -72,12 +72,10 @@ object Config {
       }
     }
 
-    // "2c92c0f865d272ef0165f14cc19d238a", // "name":"Guardian Weekly - Domestic"
     val guardianWeeklyDomesticProductId: String =
       Config.Zuora.stage match {
-        case "DEV" | "dev" => "2c92c0f865d272ef0165f14cc19d238a"
-        case "PROD" | "prod" => ""
-        case _ => "2c92c0f865d272ef0165f14cc19d238a"
+        case "DEV" | "dev" => "2c92c0f865d272ef0165f14cc19d238a"   // "name":"Guardian Weekly - Domestic"
+        case "PROD" | "prod" => "2c92a0ff6619bf8901661aa3247c4b1d" // "name":"Guardian Weekly - Domestic"
       }
 
     val guardianWeeklyRowProductId: String =
