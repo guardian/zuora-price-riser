@@ -55,23 +55,6 @@ object Config {
       }
     }
 
-    val guardianWeeklyProductIds: List[String] = {
-      val dev = List(
-        "2c92c0f8574b2b8101574c4a9473068b", // "name":"Guardian Weekly Zone A"
-        "2c92c0f95703468a015704e268635dd5", // "name":"Guardian Weekly Zone B"
-        "2c92c0f858aa38af0158da325ce00b2c", // "name":"Guardian Weekly Zone C"
-        "2c92c0f865d272ef0165f14cc19d238a", // "name":"Guardian Weekly - Domestic"
-        "2c92c0f965f2121e01660fb1f1057b1a", // "name":"Guardian Weekly - ROW"
-      )
-      val prod = List()
-
-      Config.Zuora.stage match {
-        case "DEV" | "dev" => dev
-        case "PROD" | "prod" => prod
-        case _ => dev
-      }
-    }
-
     val guardianWeeklyDomesticProductId: String =
       Config.Zuora.stage match {
         case "DEV" | "dev" => "2c92c0f865d272ef0165f14cc19d238a"   // "name":"Guardian Weekly - Domestic"
