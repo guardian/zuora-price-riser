@@ -29,8 +29,9 @@ object Main extends App with LazyLogging {
       // 2. CHECK PRE-CONDITIONS
       // **************************************************************************************************************
 
-      if (PriceRiseAlreadyApplied(subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue)) {
-        logger.info(s"${priceRise.subscriptionName} skipped because price rise already applied")
+      val skipReasons = Skip(subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue)
+      if (skipReasons.nonEmpty) {
+        logger.info(s"${priceRise.subscriptionName} skipped because $skipReasons")
       } else {
 
         val currentSubscription = CurrentGuardianWeeklySubscription(subscriptionBefore, accountBefore)
