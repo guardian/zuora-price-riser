@@ -14,7 +14,7 @@ object DryRunner extends App with LazyLogging {
   logger.info(s"Start dry run processing $filename...")
 
   var unsatisfiedPreConditionsCount = List.empty[Any]
-  var alreadyAppliedCount = 0
+  var skipReasonsCount = List.empty[SkipReason]
   var termExtensionCount = 0
 
   FileImporter.importCsv(filename).foreach {
@@ -32,8 +32,9 @@ object DryRunner extends App with LazyLogging {
       // **********************************************************************************************
       // 2. CHECK PRE-CONDITIONS
       // **********************************************************************************************
-      if (PriceRiseAlreadyApplied(subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue))
-        alreadyAppliedCount = alreadyAppliedCount + 1
+      val skipReasons = Skip(subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue)
+      if (skipReasons.nonEmpty)
+        skipReasonsCount = skipReasonsCount ++ skipReasons
       else {
         val currentSubscription = CurrentGuardianWeeklySubscription(subscriptionBefore, accountBefore)
         val priceRiseRequest = PriceRiseRequestBuilder(subscriptionBefore, currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
@@ -55,9 +56,14 @@ object DryRunner extends App with LazyLogging {
   logger.info(s"--------------------------------------------------------------")
   logger.info(s"Results (count):")
   logger.info(s"--------------------------------------------------------------")
+
   unsatisfiedPreConditionsCount
     .groupBy(identity).mapValues(_.size) // https://stackoverflow.com/a/28495085/5205022
     .foreach { case (precondition, count) => logger.info(s"Unsatisfied $precondition: $count") }
-  logger.info(s"Price rise already applied: $alreadyAppliedCount")
+
+  skipReasonsCount
+    .groupBy(identity).mapValues(_.size)
+    .foreach { case (skipReason, count) => logger.info(s"Skip because $skipReason: $count") }
+
   logger.info(s"Term extension applied: $termExtensionCount")
 }
