@@ -44,48 +44,34 @@ object Config {
         "2c92c0f965f2122101660fb81b745a06", // "name":"GW Oct 18 - Quarterly - ROW"
       )
 
-      val prod = List(
-        "",
-      )
-
       Config.Zuora.stage match {
         case "DEV" | "dev" => dev
-        case "PROD" | "prod" => prod
-        case _ => dev
+        case "PROD" | "prod" => List(
+          // Product: {"id":"2c92a0fd-57d0-a987-0157-d73fa27c3de1","name":"Guardian Weekly Zone A"}
+          "2c92a0fd57d0a9870157d7412f19424f", // "name":"Guardian Weekly Quarterly"
+          "2c92a0ff57d0a0b60157d741e722439a", // "name":"Guardian Weekly Annual"
+
+          // Product: {"id":"2c92a0fe-57d0-a0c4-0157-d74240d35541","name":"Guardian Weekly Zone B"}
+          "2c92a0fe57d0a0c40157d74241005544", // "name":"Guardian Weekly Quarterly"
+          "2c92a0fe57d0a0c40157d74240de5543", // "name":"Guardian Weekly Annual"
+
+          // Product: {"id":"2c92a0ff-58bd-f4eb-0158-f307ecc102ad","name":"Guardian Weekly Zone C"}
+          "2c92a0ff58bdf4eb0158f307ed0e02be", // "name":"Guardian Weekly Quarterly"
+          "2c92a0ff58bdf4eb0158f307eccf02af", // "name":"Guardian Weekly Annual"
+        )
       }
     }
 
-    val guardianWeeklyProductIds: List[String] = {
-      val dev = List(
-        "2c92c0f8574b2b8101574c4a9473068b", // "name":"Guardian Weekly Zone A"
-        "2c92c0f95703468a015704e268635dd5", // "name":"Guardian Weekly Zone B"
-        "2c92c0f858aa38af0158da325ce00b2c", // "name":"Guardian Weekly Zone C"
-        "2c92c0f865d272ef0165f14cc19d238a", // "name":"Guardian Weekly - Domestic"
-        "2c92c0f965f2121e01660fb1f1057b1a", // "name":"Guardian Weekly - ROW"
-      )
-      val prod = List()
-
-      Config.Zuora.stage match {
-        case "DEV" | "dev" => dev
-        case "PROD" | "prod" => prod
-        case _ => dev
-      }
-    }
-
-    // "2c92c0f865d272ef0165f14cc19d238a", // "name":"Guardian Weekly - Domestic"
     val guardianWeeklyDomesticProductId: String =
       Config.Zuora.stage match {
-        case "DEV" | "dev" => "2c92c0f865d272ef0165f14cc19d238a"
-        case "PROD" | "prod" => ""
-        case _ => "2c92c0f865d272ef0165f14cc19d238a"
+        case "DEV" | "dev" => "2c92c0f865d272ef0165f14cc19d238a"   // "name":"Guardian Weekly - Domestic"
+        case "PROD" | "prod" => "2c92a0ff6619bf8901661aa3247c4b1d" // "name":"Guardian Weekly - Domestic"
       }
 
-    // "2c92c0f965f2121e01660fb1f1057b1a", // "name":"Guardian Weekly - ROW"
     val guardianWeeklyRowProductId: String =
       Config.Zuora.stage match {
-        case "DEV" | "dev" => "2c92c0f965f2121e01660fb1f1057b1a"
-        case "PROD" | "prod" => ""
-        case _ => "2c92c0f965f2121e01660fb1f1057b1a"
+        case "DEV" | "dev" => "2c92c0f965f2121e01660fb1f1057b1a"    // "name":"Guardian Weekly - ROW"
+        case "PROD" | "prod" => "2c92a0fe6619b4b901661aaf826435de"  // "name":"Guardian Weekly - ROW"
       }
 
     // Do not remove Holiday and Retention Discounts (Cancellation Save Discount)
@@ -97,14 +83,14 @@ object Config {
           "2c92c0f862ceb7050162d393b0ff6df7", // "name":"Cancellation Save Discount - 50% off for 3 months"
         )
         case "PROD" | "prod" => List(
-          "" // TODO: Add prod stuff everywhere
-        )
-        case _ => List(
-          ""
+          "2c92a0fc5b42d2c9015b6259f7f40040", // "name":"Guardian Weekly Holiday Credit"
+          "2c92a0ff64176cd40164232c8ec97661", // "name":"Cancellation Save Discount - 25% off for 3 months"
+          "2c92a00864176ce90164232ac0d90fc1", // "name":"Cancellation Save Discount - 50% off for 3 months"
         )
       }
   }
 
+  // FIXME: add actual value
   val priceRiseFactorCap = 1.5 // cap is 50% rise
 
 
