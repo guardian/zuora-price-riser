@@ -8,7 +8,6 @@ trait PriceRisePreCondition
 case object SubscriptionIsAutoRenewable extends PriceRisePreCondition
 case object SubscriptionIsActive extends PriceRisePreCondition
 case object PriceRiseDateIsOnInvoicedPeriodEndDate extends PriceRisePreCondition
-case object ImportHasCorrectCurrentPrice extends PriceRisePreCondition
 case object TargetPriceRiseIsNotMoreThanTheCap extends PriceRisePreCondition
 case object TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice extends PriceRisePreCondition
 case object TargetPriceRiseIsMoreThanTheCurrentPrice extends PriceRisePreCondition
@@ -38,8 +37,7 @@ object CheckPriceRisePreConditions {
       SubscriptionIsAutoRenewable -> subscription.autoRenew,
       SubscriptionIsActive -> (subscription.status == "Active"),
       PriceRiseDateIsOnInvoicedPeriodEndDate -> currentGuardianWeeklySubscription.invoicedPeriod.endDateExcluding.isEqual(priceRise.priceRiseDate),
-      ImportHasCorrectCurrentPrice -> (currentGuardianWeeklySubscription.price == priceRise.currentPrice),
-      TargetPriceRiseIsNotMoreThanTheCap -> (priceRise.newPrice < priceRise.currentPrice * Config.priceRiseFactorCap),
+      TargetPriceRiseIsNotMoreThanTheCap -> (priceRise.newPrice < currentGuardianWeeklySubscription.price * Config.priceRiseFactorCap),
       TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice -> (priceRise.newPrice <= DefaultCataloguePrice(futureGuardianWeeklyProducts, currentGuardianWeeklySubscription)),
       TargetPriceRiseIsMoreThanTheCurrentPrice -> (priceRise.newPrice > currentGuardianWeeklySubscription.price),
       CurrentlyActiveProductRatePlanIsGuardianWeeklyRatePlan -> Config.Zuora.guardianWeeklyProductRatePlanIds.contains(currentGuardianWeeklySubscription.productRatePlanId),

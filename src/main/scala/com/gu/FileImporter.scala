@@ -37,7 +37,7 @@ object FileImporter {
     campaignName: campaign_name,
     dateLetterSent: date_letter_sent,
     priceRiseDate: price_rise_date,
-    currentPrice: current_price_today,
+    _unsafeCurrentPrice: current_price_today, // WARNING: Do not trust this value.
     newPrice: guardian_weekly_new_price,
     termEndDate: term_end_date
   )
