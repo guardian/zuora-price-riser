@@ -16,6 +16,7 @@ object DryRunner extends App with LazyLogging {
   var unsatisfiedPreConditionsCount = List.empty[Any]
   var skipReasonsCount = List.empty[SkipReason]
   var termExtensionCount = 0
+  var readyToApplyCount = 0 // pre-conditions passed
 
   FileImporter.importCsv(filename).foreach {
     case Left(importError) =>
@@ -33,8 +34,10 @@ object DryRunner extends App with LazyLogging {
       // 2. CHECK PRE-CONDITIONS
       // **********************************************************************************************
       val skipReasons = Skip(subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue)
-      if (skipReasons.nonEmpty)
-        skipReasonsCount = skipReasonsCount ++ skipReasons
+      if (skipReasons.nonEmpty) {
+          skipReasonsCount = skipReasonsCount ++ skipReasons
+          logger.info(s"${subscriptionBefore.subscriptionNumber} skipped because $skipReasons")
+      }
       else {
         val currentSubscription = CurrentGuardianWeeklySubscription(subscriptionBefore, accountBefore)
         val priceRiseRequest = PriceRiseRequestBuilder(subscriptionBefore, currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
@@ -44,8 +47,14 @@ object DryRunner extends App with LazyLogging {
           CheckPriceRisePreConditions(priceRise, subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue
           ) ++ CheckPriceRiseRequestPreConditions(priceRiseRequest, currentSubscription)
 
-        if (unsatisfiedPreConditions.nonEmpty)
+        if (unsatisfiedPreConditions.nonEmpty) {
           unsatisfiedPreConditionsCount = unsatisfiedPreConditionsCount ++ unsatisfiedPreConditions
+          logger.warn(s"${subscriptionBefore.subscriptionNumber} would NOT apply because: $unsatisfiedPreConditions")
+        }
+        else {
+          readyToApplyCount = readyToApplyCount + 1
+          logger.info(s"${subscriptionBefore.subscriptionNumber} ready to apply")
+        }
 
         if (extendTermRequestOpt.isDefined)
           termExtensionCount = termExtensionCount + 1
@@ -56,6 +65,7 @@ object DryRunner extends App with LazyLogging {
   logger.info(s"--------------------------------------------------------------")
   logger.info(s"Results (count):")
   logger.info(s"--------------------------------------------------------------")
+  logger.info(s"Ready to apply: $readyToApplyCount")
 
   unsatisfiedPreConditionsCount
     .groupBy(identity).mapValues(_.size) // https://stackoverflow.com/a/28495085/5205022
