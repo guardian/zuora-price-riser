@@ -15,7 +15,7 @@ object FileImporter {
 
   type subscription_name = String
   type campaign_name = String
-  type date_letter_sent = LocalDate
+  type date_letter_sent = String // we do not care about this so no LocalDate
   type price_rise_date = LocalDate
   type current_price_today = Float
   type guardian_weekly_new_price = Float

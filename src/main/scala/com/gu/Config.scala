@@ -90,8 +90,5 @@ object Config {
       }
   }
 
-  // FIXME: add actual value
-  val priceRiseFactorCap = 1.5 // cap is 50% rise
-
-
+  val priceRiseFactorCap = 1.34 // cap is 33% rise
 }
