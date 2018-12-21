@@ -1,6 +1,7 @@
 package com.gu
 
 import com.typesafe.scalalogging.LazyLogging
+import scala.io.StdIn
 
 /**
   * The script will stop on the first error it encounters.
@@ -10,6 +11,14 @@ object Main extends App with LazyLogging {
   if (args.length == 0)
     Abort("Please provide import filename")
   val filename = args(0)
+
+  if (Config.Zuora.stage == "PROD") {
+    logger.warn(Console.RED + "WARNING: Are you sure you want to run against Zuora PROD? (Y/N)" + Console.RESET)
+    StdIn.readLine() match {
+      case "Y" =>
+      case _ => Abort("User aborted the script.")
+    }
+  }
 
   logger.info(s"Start processing $filename...")
 
