@@ -22,13 +22,7 @@ object Skip {
       OneOff -> (!subscriptionBefore.autoRenew),
       Cancelled -> (subscriptionBefore.status == "Cancelled"),
       PriceRiseApplied -> PriceRiseAlreadyApplied(subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue),
-      FutureAmendmentExists ->
-        subscriptionBefore
-          .ratePlans
-          .exists { ratePlan =>
-            val effectiveStartDate = ratePlan.ratePlanCharges.head.effectiveStartDate // Let it crash if no head
-            effectiveStartDate.isEqual(priceRise.priceRiseDate) || effectiveStartDate.isAfter(priceRise.priceRiseDate)
-          }
+      FutureAmendmentExists -> FutureAmendmentsOnOrAfterPriceRiseDate(subscriptionBefore, priceRise).nonEmpty
     ).partition(_._2)
 
     satisfied.map(_._1)
