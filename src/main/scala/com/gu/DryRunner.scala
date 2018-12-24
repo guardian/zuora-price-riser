@@ -69,7 +69,7 @@ object DryRunner extends App with LazyLogging {
 
   unsatisfiedPreConditionsCount
     .groupBy(identity).mapValues(_.size) // https://stackoverflow.com/a/28495085/5205022
-    .foreach { case (precondition, count) => logger.info(s"Unsatisfied $precondition: $count") }
+    .foreach { case (precondition, count) => logger.warn(s"Unsatisfied $precondition: $count") }
 
   skipReasonsCount
     .groupBy(identity).mapValues(_.size)
