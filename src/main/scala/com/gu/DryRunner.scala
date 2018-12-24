@@ -33,7 +33,7 @@ object DryRunner extends App with LazyLogging {
       // **********************************************************************************************
       // 2. CHECK PRE-CONDITIONS
       // **********************************************************************************************
-      val skipReasons = Skip(subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue)
+      val skipReasons = Skip(subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue, priceRise)
       if (skipReasons.nonEmpty) {
           skipReasonsCount = skipReasonsCount ++ skipReasons
           logger.info(s"${subscriptionBefore.subscriptionNumber} skipped because $skipReasons")

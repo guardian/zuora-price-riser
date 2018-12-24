@@ -44,12 +44,7 @@ object CheckPriceRisePreConditions {
       BillingPeriodIsQuarterlyOrAnnually -> List("Annual", "Quarter").contains(currentGuardianWeeklySubscription.billingPeriod),
       ThereDoesNotExistAFutureAmendmentOnThePriceRiseDate ->
         Try {
-          subscription
-            .ratePlans
-            .filter { ratePlan =>
-              val effectiveStartDate = ratePlan.ratePlanCharges.head.effectiveStartDate
-              effectiveStartDate.isEqual(priceRise.priceRiseDate) || effectiveStartDate.isAfter(priceRise.priceRiseDate)
-            }
+          FutureAmendmentsOnOrAfterPriceRiseDate(subscription, priceRise)
             .map(_.productRatePlanId)
             .forall(doNotRemoveProductRatePlanIds.contains)
         }.getOrElse(false),
