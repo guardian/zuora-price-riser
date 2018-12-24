@@ -14,14 +14,14 @@ case class NewGuardianWeeklySubscription(
 
 object DefaultCataloguePrice {
   def apply(
-    guardianWeeklyProduct: NewGuardianWeeklyProduct,
+    newGuardianWeeklyProduct: NewGuardianWeeklyProduct,
     currentGuardianWeeklySubscription: CurrentGuardianWeeklySubscription
   ): Float = {
-    guardianWeeklyProduct
+    newGuardianWeeklyProduct
       .pricing
       .find(_.currency == currentGuardianWeeklySubscription.currency)
       .map(_.price)
-      .getOrElse(throw new RuntimeException(s"Guardian Weekly product should have a default price: $guardianWeeklyProduct, $currentGuardianWeeklySubscription"))
+      .getOrElse(throw new RuntimeException(s"Guardian Weekly product should have a default price: $newGuardianWeeklyProduct, $currentGuardianWeeklySubscription"))
   }
 }
 
@@ -77,6 +77,7 @@ case class NewGuardianWeeklyProduct(
 ) {
   require(taxCode == s"Guardian Weekly", s"Product must be Guardian Weekly: ${pprint.apply(this)}")
   require(List("Quarter", "Annual").contains(billingPeriod), s"Guardian Weekly must be Quarterly or Annual: ${pprint.apply(this)}")
+  require(Config.Zuora.New.guardianWeeklyProductRatePlanIds.contains(productRatePlanId), s"New Guardian Weekly product must have new product rate plan ID: ${pprint.apply(this)}")
 }
 
 /**
@@ -89,11 +90,11 @@ object NewGuardianWeeklyProduct {
   ): NewGuardianWeeklyProduct = {
 
     (Country.toFutureGuardianWeeklyProductId(currentGuardianWeeklySubscription.country, currentGuardianWeeklySubscription.currency) match {
-      case Config.Zuora.guardianWeeklyDomesticProductId => newGuardianWeeklyProductCatalogue.domestic
-      case Config.Zuora.guardianWeeklyRowProductId => newGuardianWeeklyProductCatalogue.restOfTheWorld
+      case Config.Zuora.New.guardianWeeklyDomesticProductId => newGuardianWeeklyProductCatalogue.domestic
+      case Config.Zuora.New.guardianWeeklyRowProductId => newGuardianWeeklyProductCatalogue.restOfTheWorld
     })
       .find(_.billingPeriod == currentGuardianWeeklySubscription.billingPeriod)
-      .getOrElse(throw new RuntimeException(s"${currentGuardianWeeklySubscription.subscriptionNumber} failed to determine new GuardianWeeklyProduct"))
+      .getOrElse(throw new RuntimeException(s"${currentGuardianWeeklySubscription.subscriptionNumber} failed to determine NewGuardianWeeklyProduct"))
 
   }
 }
@@ -111,6 +112,7 @@ case class NewGuardianWeeklyProductCatalogue(
   require(domestic.forall(_.productRatePlanName.contains("Domestic")))
   require(restOfTheWorld.forall(_.productRatePlanName.contains("ROW")))
   require(domestic.nonEmpty && restOfTheWorld.nonEmpty)
+  require((domestic ++ restOfTheWorld).map(_.billingPeriod).forall(List("Quarter", "Annual").contains))
 
   def getAllProductRatePlanIds: List[String] =
     domestic.map(_.productRatePlanId) ++ restOfTheWorld.map(_.productRatePlanId)
@@ -120,18 +122,19 @@ case class NewGuardianWeeklyProductCatalogue(
 }
 
 /**
-  * Maps a Zuora model to a custom made model representing Guardian Weekly product.
+  * Maps a Zuora model to a custom made model representing new after-price-rise Guardian Weekly product.
   *
   * Given a list of all Zuora Product Rate Plans associated with a Product returns list of
   * GuardianWeeklyProduct which is a custom model having productRatePlanId and productRatePlanChargeId
   * at the top level.
   */
-object GuardianWeeklyProducts {
+object NewGuardianWeeklyProducts {
   def apply(productRatePlans: List[ProductRatePlan]): List[NewGuardianWeeklyProduct] = {
     require(productRatePlans.nonEmpty)
     require(productRatePlans.forall(_.productRatePlanCharges.size == 1), "Guardian Weekly should have one-to-one mapping between productRatePlanId and productRatePlanChargeId")
     productRatePlans
       .filter(productRatePlan => List("Quarter", "Annual").contains(productRatePlan.productRatePlanCharges.head.billingPeriod))
+      .filter(productRatePlan => Config.Zuora.New.guardianWeeklyProductRatePlanIds.contains(productRatePlan.id))
       .map(productRatePlan => NewGuardianWeeklyProduct(
         productRatePlan.name,
         productRatePlan.productRatePlanCharges.head.billingPeriod,

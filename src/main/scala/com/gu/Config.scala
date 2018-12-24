@@ -35,17 +35,40 @@ object Config {
         }
     }
 
-    val guardianWeeklyDomesticProductId: String =
-      Config.Zuora.stage match {
-        case "DEV" | "dev" => "2c92c0f865d272ef0165f14cc19d238a"   // "name":"Guardian Weekly - Domestic"
-        case "PROD" | "prod" => "2c92a0ff6619bf8901661aa3247c4b1d" // "name":"Guardian Weekly - Domestic"
-      }
+    object New {
+      val guardianWeeklyDomesticProductId: String =
+        Config.Zuora.stage match {
+          case "DEV" | "dev" => "2c92c0f865d272ef0165f14cc19d238a"   // "name":"Guardian Weekly - Domestic"
+          case "PROD" | "prod" => "2c92a0ff6619bf8901661aa3247c4b1d" // "name":"Guardian Weekly - Domestic"
+        }
 
-    val guardianWeeklyRowProductId: String =
-      Config.Zuora.stage match {
-        case "DEV" | "dev" => "2c92c0f965f2121e01660fb1f1057b1a"    // "name":"Guardian Weekly - ROW"
-        case "PROD" | "prod" => "2c92a0fe6619b4b901661aaf826435de"  // "name":"Guardian Weekly - ROW"
+      val guardianWeeklyRowProductId: String =
+        Config.Zuora.stage match {
+          case "DEV" | "dev" => "2c92c0f965f2121e01660fb1f1057b1a"    // "name":"Guardian Weekly - ROW"
+          case "PROD" | "prod" => "2c92a0fe6619b4b901661aaf826435de"  // "name":"Guardian Weekly - ROW"
+        }
+
+      val guardianWeeklyProductRatePlanIds: List[String] = stage match {
+        case "DEV" => List(
+          // Product: {"id":"2c92c0f8-65d2-72ef-0165-f14cc19d238a", "name":"Guardian Weekly - Domestic"}
+          "2c92c0f965d280590165f16b1b9946c2", // "name": "GW Oct 18 - Annual - Domestic"
+          "2c92c0f965dc30640165f150c0956859", // "name": "GW Oct 18 - Quarterly - Domestic"
+
+            // Product: {"2c92c0f9-65f2-121e-0166-0fb1f1057b1a", "name":"Guardian Weekly - ROW"}
+          "2c92c0f965f2122101660fb33ed24a45", // "name":"GW Oct 18 - Annual - ROW"
+          "2c92c0f965f2122101660fb81b745a06", // "name":"GW Oct 18 - Quarterly - ROW"
+        )
+        case "PROD" => List(
+          // Product: {"id":"2c92a0ff-6619-bf89-0166-1aa3247c4b1d", "name":"Guardian Weekly - Domestic"}
+          "2c92a0fe6619b4b901661aa8e66c1692", // "name": "GW Oct 18 - Annual - Domestic"
+          "2c92a0fe6619b4b301661aa494392ee2", // "name": "GW Oct 18 - Quarterly - Domestic"
+
+          // Product: {"2c92a0fe-6619-b4b9-0166-1aaf826435de", "name":"Guardian Weekly - ROW"}
+          "2c92a0fe6619b4b601661ab300222651", // "name":"GW Oct 18 - Annual - ROW"
+          "2c92a0086619bf8901661ab02752722f", // "name":"GW Oct 18 - Quarterly - ROW"
+        )
       }
+    }
 
     // Do not remove Holiday and Retention Discounts (Cancellation Save Discount)
     val doNotRemoveProductRatePlanIds: List[String] =
