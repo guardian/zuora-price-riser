@@ -30,7 +30,7 @@ object Main extends App with LazyLogging {
       // **************************************************************************************************************
       // 1. GET CURRENT ZUORA DATA
       // **************************************************************************************************************
-      val newGuardianWeeklyProductCatalogue = ZuoraClient.getNewGuardianWeeklyProductCatalogue()
+      val newGuardianWeeklyProductCatalogue = ZuoraClient.getNewGuardianWeeklyProductCatalogue
       val subscriptionBefore = ZuoraClient.getSubscription(priceRise.subscriptionName)
       val accountBefore = ZuoraClient.getAccount(subscriptionBefore.accountNumber)
 

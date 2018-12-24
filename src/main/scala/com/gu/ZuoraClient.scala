@@ -179,7 +179,7 @@ object ZuoraClient extends ZuoraJsonFormats {
     )
   }
 
-  def getNewGuardianWeeklyProductCatalogue() = NewGuardianWeeklyProductCatalogue(
+  lazy val getNewGuardianWeeklyProductCatalogue = NewGuardianWeeklyProductCatalogue(
     domestic = getGuardianWeeklyProducts(Config.Zuora.guardianWeeklyDomesticProductId),
     restOfTheWorld = getGuardianWeeklyProducts(Config.Zuora.guardianWeeklyRowProductId)
   )
