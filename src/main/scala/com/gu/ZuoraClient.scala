@@ -168,7 +168,7 @@ object ZuoraClient extends ZuoraJsonFormats {
     }
   }
 
-  private def getGuardianWeeklyProducts(guardianWeeklyProductId: String): List[GuardianWeeklyProduct] = {
+  private def getGuardianWeeklyProducts(guardianWeeklyProductId: String): List[NewGuardianWeeklyProduct] = {
     import Config.Zuora._
     require(
       List(guardianWeeklyDomesticProductId, guardianWeeklyRowProductId).contains(guardianWeeklyProductId),
