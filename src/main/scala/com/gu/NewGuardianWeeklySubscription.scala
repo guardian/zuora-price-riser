@@ -14,8 +14,8 @@ case class NewGuardianWeeklySubscription(
 
 object DefaultCataloguePrice {
   def apply(
-      guardianWeeklyProduct: GuardianWeeklyProduct,
-      currentGuardianWeeklySubscription: CurrentGuardianWeeklySubscription
+    guardianWeeklyProduct: NewGuardianWeeklyProduct,
+    currentGuardianWeeklySubscription: CurrentGuardianWeeklySubscription
   ): Float = {
     guardianWeeklyProduct
       .pricing
@@ -67,7 +67,7 @@ object NewGuardianWeeklySubscription {
   * Because Guardian Weekly (quarter, annual) has one-to-one mapping between productRatePlanId
   * and productRatePlanChargeId, we can flatten the model.
   */
-case class GuardianWeeklyProduct(
+case class NewGuardianWeeklyProduct(
   productRatePlanName: String,
   billingPeriod: String,
   productRatePlanId: String,
@@ -82,11 +82,11 @@ case class GuardianWeeklyProduct(
 /**
   * Find new GuardianWeeklyProduct using billingPeriod and delivery country.
   */
-object GuardianWeeklyProduct {
+object NewGuardianWeeklyProduct {
   def apply(
       currentGuardianWeeklySubscription: CurrentGuardianWeeklySubscription,
       newGuardianWeeklyProductCatalogue: NewGuardianWeeklyProductCatalogue
-  ): GuardianWeeklyProduct = {
+  ): NewGuardianWeeklyProduct = {
 
     (Country.toFutureGuardianWeeklyProductId(currentGuardianWeeklySubscription.country, currentGuardianWeeklySubscription.currency) match {
       case Config.Zuora.guardianWeeklyDomesticProductId => newGuardianWeeklyProductCatalogue.domestic
@@ -105,8 +105,8 @@ object GuardianWeeklyProduct {
   * @param restOfTheWorld product with name 'Guardian Weekly - ROW'
   */
 case class NewGuardianWeeklyProductCatalogue(
-  domestic: List[GuardianWeeklyProduct],
-  restOfTheWorld: List[GuardianWeeklyProduct]
+  domestic: List[NewGuardianWeeklyProduct],
+  restOfTheWorld: List[NewGuardianWeeklyProduct]
 ) {
   require(domestic.forall(_.productRatePlanName.contains("Domestic")))
   require(restOfTheWorld.forall(_.productRatePlanName.contains("ROW")))
@@ -127,12 +127,12 @@ case class NewGuardianWeeklyProductCatalogue(
   * at the top level.
   */
 object GuardianWeeklyProducts {
-  def apply(productRatePlans: List[ProductRatePlan]): List[GuardianWeeklyProduct] = {
+  def apply(productRatePlans: List[ProductRatePlan]): List[NewGuardianWeeklyProduct] = {
     require(productRatePlans.nonEmpty)
     require(productRatePlans.forall(_.productRatePlanCharges.size == 1), "Guardian Weekly should have one-to-one mapping between productRatePlanId and productRatePlanChargeId")
     productRatePlans
       .filter(productRatePlan => List("Quarter", "Annual").contains(productRatePlan.productRatePlanCharges.head.billingPeriod))
-      .map(productRatePlan => GuardianWeeklyProduct(
+      .map(productRatePlan => NewGuardianWeeklyProduct(
         productRatePlan.name,
         productRatePlan.productRatePlanCharges.head.billingPeriod,
         productRatePlan.id,

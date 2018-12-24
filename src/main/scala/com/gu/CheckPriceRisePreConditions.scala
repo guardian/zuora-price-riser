@@ -31,7 +31,7 @@ object CheckPriceRisePreConditions {
   ): UnsatisfiedPriceRisePreConditions = {
 
     val currentGuardianWeeklySubscription = CurrentGuardianWeeklySubscription(subscription, account)
-    val futureGuardianWeeklyProducts = GuardianWeeklyProduct(currentGuardianWeeklySubscription, newGuardianWeeklyProductCatalogue)
+    val futureGuardianWeeklyProducts = NewGuardianWeeklyProduct(currentGuardianWeeklySubscription, newGuardianWeeklyProductCatalogue)
 
     val (_, unsatisfied) = List[(PriceRisePreCondition, Boolean)](
       SubscriptionIsAutoRenewable -> subscription.autoRenew,

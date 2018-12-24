@@ -16,7 +16,7 @@ object PriceRiseRequestBuilder {
     require(currentGuardianWeeklySubscription.subscriptionNumber == priceRise.subscriptionName, "Price rise applied to a wrong subscription.")
 
     val newGuardianWeeklyProduct =
-      GuardianWeeklyProduct(currentGuardianWeeklySubscription, newGuardianWeeklyProductCatalogue)
+      NewGuardianWeeklyProduct(currentGuardianWeeklySubscription, newGuardianWeeklyProductCatalogue)
 
     val chargeOverride = ChargeOverride(
       newGuardianWeeklyProduct.productRatePlanChargeId,
