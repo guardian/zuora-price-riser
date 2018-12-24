@@ -3,7 +3,7 @@ package com.gu
 import com.gu.i18n.CountryGroup
 
 object Country {
-  def toCurrency(country: String): String =
+  def standardCurrency(country: String): String =
     country match {
       case _ if UK.contains(country) => "GBP"
       case _ if US.contains(country) => "USD"
@@ -14,9 +14,10 @@ object Country {
       case _ if RestOfTheWorld.contains(country) => "USD"
     }
 
-  def toFutureGuardianWeeklyProductId(country: String): String = country match {
+  def toFutureGuardianWeeklyProductId(country: String, currency: String): String = country match {
     case _ if RestOfTheWorld.contains(country) => Config.Zuora.guardianWeeklyRowProductId
-    case _ => Config.Zuora.guardianWeeklyDomesticProductId
+    case _ if standardCurrency(country) == currency => Config.Zuora.guardianWeeklyDomesticProductId
+    case _ => Config.Zuora.guardianWeeklyRowProductId
   }
 
   private val UK = CountryGroup.UK.countries.map(_.name)
