@@ -88,7 +88,7 @@ object GuardianWeeklyProduct {
       newGuardianWeeklyProductCatalogue: NewGuardianWeeklyProductCatalogue
   ): GuardianWeeklyProduct = {
 
-    (Country.toFutureGuardianWeeklyProductId(currentGuardianWeeklySubscription.country) match {
+    (Country.toFutureGuardianWeeklyProductId(currentGuardianWeeklySubscription.country, currentGuardianWeeklySubscription.currency) match {
       case Config.Zuora.guardianWeeklyDomesticProductId => newGuardianWeeklyProductCatalogue.domestic
       case Config.Zuora.guardianWeeklyRowProductId => newGuardianWeeklyProductCatalogue.restOfTheWorld
     })
