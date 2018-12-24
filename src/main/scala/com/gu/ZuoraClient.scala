@@ -136,22 +136,23 @@ object ZuoraClient extends ZuoraJsonFormats {
       HttpWithLongTimeout(s"$host/v1/subscriptions/$subscriptionName")
         .header("Authorization", s"Bearer $accessToken")
         .asString
-        .body
 
-
-    val subscription = parse(response).extract[Subscription]
-    subscription
+    response.code match {
+      case 200 => parse(response.body).extract[Subscription]
+      case _ => throw new RuntimeException(s"Failed to getSubscription $subscriptionName: $response")
+    }
   }
 
   def getAccount(accountNumber: String): Account = {
-    val responseAccount =
+    val response =
       HttpWithLongTimeout(s"$host/v1/accounts/$accountNumber")
         .header("Authorization", s"Bearer $accessToken")
         .asString
-        .body
 
-    val account = parse(responseAccount).extract[Account]
-    account
+    response.code match {
+      case 200 => parse(response.body).extract[Account]
+      case _ => throw new RuntimeException(s"Failed to getAccount $accountNumber: $response")
+    }
   }
 
   def getProductRatePlans(productId: String): List[ProductRatePlan] = {
@@ -159,10 +160,12 @@ object ZuoraClient extends ZuoraJsonFormats {
       HttpWithLongTimeout(s"$host/v1/rateplan/$productId/productRatePlan")
         .header("Authorization", s"Bearer $accessToken")
         .asString
-        .body
 
     //pprint.pprintln(productRatePlans, height = 1000)
-    (parse(response) \ "productRatePlans").extract[List[ProductRatePlan]]
+    response.code match {
+      case 200 => (parse(response.body) \ "productRatePlans").extract[List[ProductRatePlan]]
+      case _ => throw new RuntimeException(s"Failed to getProductRatePlans for productId $productId: $response")
+    }
   }
 
   private def getGuardianWeeklyProducts(guardianWeeklyProductId: String): List[GuardianWeeklyProduct] = {
@@ -233,8 +236,9 @@ object ZuoraClient extends ZuoraJsonFormats {
   )
 
   def extendTerm(
-    subscriptionName: String,
-    body: ExtendTerm): PriceRiseResponse = {
+      subscriptionName: String,
+      body: ExtendTerm
+  ): PriceRiseResponse = {
     val response = HttpWithLongTimeout(s"$host/v1/subscriptions/$subscriptionName")
       .header("Authorization", s"Bearer $accessToken")
       .header("content-type", "application/json")
@@ -272,16 +276,18 @@ object ZuoraOauth extends ZuoraJsonFormats {
         "grant_type" -> "client_credentials"
       ))
       .asString
-      .body
 
-    parse(response).extract[Token].access_token
+    response.code match {
+      case 200 => parse(response.body).extract[Token].access_token
+      case _ => throw new RuntimeException(s"Failed to authenticate with Zuora: $response")
+    }
   }
 
   private val timer = new Timer()
 
   timer.schedule(
     new TimerTask { def run(): Unit = accessToken = getAccessToken() },
-    0, 55 * 60 * 1000 // refresh token every 55 min
+    0, 1 * 60 * 1000 // refresh token every 1 min
   )
   accessToken = getAccessToken() // set token on initialization
 }
