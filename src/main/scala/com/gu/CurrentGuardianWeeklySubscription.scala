@@ -62,7 +62,7 @@ object CurrentGuardianWeeklySubscription {
       .ratePlans
       .find { ratePlan =>
         List[(CurrentGuardianWeeklyRatePlanCondition, Boolean)](
-          RatePlanIsGuardianWeekly -> Config.Zuora.guardianWeeklyProductRatePlanIds.contains(ratePlan.productRatePlanId),
+          RatePlanIsGuardianWeekly -> Config.Zuora.Old.guardianWeeklyProductRatePlanIds.contains(ratePlan.productRatePlanId),
           RatePlanHasACharge -> ratePlan.ratePlanCharges.nonEmpty,
           RatePlanHasOnlyOneCharge -> (ratePlan.ratePlanCharges.size == 1),
           TodayHasBeenInvoiced ->

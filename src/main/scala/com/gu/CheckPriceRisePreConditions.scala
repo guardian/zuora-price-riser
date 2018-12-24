@@ -40,7 +40,7 @@ object CheckPriceRisePreConditions {
       TargetPriceRiseIsNotMoreThanTheCap -> (priceRise.newPrice < currentGuardianWeeklySubscription.price * Config.priceRiseFactorCap),
       TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice -> (priceRise.newPrice <= DefaultCataloguePrice(futureGuardianWeeklyProducts, currentGuardianWeeklySubscription)),
       TargetPriceRiseIsMoreThanTheCurrentPrice -> (priceRise.newPrice > currentGuardianWeeklySubscription.price),
-      CurrentlyActiveProductRatePlanIsGuardianWeeklyRatePlan -> Config.Zuora.guardianWeeklyProductRatePlanIds.contains(currentGuardianWeeklySubscription.productRatePlanId),
+      CurrentlyActiveProductRatePlanIsGuardianWeeklyRatePlan -> Config.Zuora.Old.guardianWeeklyProductRatePlanIds.contains(currentGuardianWeeklySubscription.productRatePlanId),
       BillingPeriodIsQuarterlyOrAnnually -> List("Annual", "Quarter").contains(currentGuardianWeeklySubscription.billingPeriod),
       ThereDoesNotExistAFutureAmendmentOnThePriceRiseDate ->
         Try {
