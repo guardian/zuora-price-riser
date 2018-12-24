@@ -90,5 +90,5 @@ object Config {
       }
   }
 
-  val priceRiseFactorCap = 1.34 // cap is 33% rise
+  val priceRiseFactorCap = 1.99 // cap is 99% rise;
 }
