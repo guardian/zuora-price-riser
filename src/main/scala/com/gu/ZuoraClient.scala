@@ -155,7 +155,7 @@ object ZuoraClient extends ZuoraJsonFormats {
     }
   }
 
-  def getProductRatePlans(productId: String): List[ProductRatePlan] = {
+  private def getProductRatePlans(productId: String): List[ProductRatePlan] = {
     val response =
       HttpWithLongTimeout(s"$host/v1/rateplan/$productId/productRatePlan")
         .header("Authorization", s"Bearer $accessToken")
@@ -168,22 +168,11 @@ object ZuoraClient extends ZuoraJsonFormats {
     }
   }
 
-  private def getGuardianWeeklyProducts(guardianWeeklyProductId: String): List[NewGuardianWeeklyProduct] = {
-    import Config.Zuora._
-    require(
-      List(guardianWeeklyDomesticProductId, guardianWeeklyRowProductId).contains(guardianWeeklyProductId),
-      "Product ID should represent either 'Guardian Weekly - ROW' or 'Guardian Weekly - Domestic'"
-    )
-    GuardianWeeklyProducts(
-      getProductRatePlans(guardianWeeklyProductId)
-    )
-  }
-
+  // FIXME: Once we enable all currencies we could hardcode this object
   lazy val getNewGuardianWeeklyProductCatalogue = NewGuardianWeeklyProductCatalogue(
-    domestic = getGuardianWeeklyProducts(Config.Zuora.guardianWeeklyDomesticProductId),
-    restOfTheWorld = getGuardianWeeklyProducts(Config.Zuora.guardianWeeklyRowProductId)
+    domestic = NewGuardianWeeklyProducts(getProductRatePlans(Config.Zuora.New.guardianWeeklyDomesticProductId)),
+    restOfTheWorld = NewGuardianWeeklyProducts(getProductRatePlans(Config.Zuora.New.guardianWeeklyRowProductId))
   )
-
 
   /*
   PUT /v1/subscriptions/A-S00047834 HTTP/1.1

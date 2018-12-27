@@ -15,9 +15,9 @@ object Country {
     }
 
   def toFutureGuardianWeeklyProductId(country: String, currency: String): String = country match {
-    case _ if RestOfTheWorld.contains(country) => Config.Zuora.guardianWeeklyRowProductId
-    case _ if standardCurrency(country) == currency => Config.Zuora.guardianWeeklyDomesticProductId
-    case _ => Config.Zuora.guardianWeeklyRowProductId
+    case _ if RestOfTheWorld.contains(country) => Config.Zuora.New.guardianWeeklyRowProductId
+    case _ if standardCurrency(country) == currency => Config.Zuora.New.guardianWeeklyDomesticProductId
+    case _ => Config.Zuora.New.guardianWeeklyRowProductId
   }
 
   private val UK = CountryGroup.UK.countries.map(_.name)
