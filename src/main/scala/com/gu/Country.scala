@@ -4,6 +4,7 @@ import com.gu.i18n.CountryGroup
 
 object Country {
   def standardCurrency(country: String): String = {
+    require(country.length > 2, "Country should have its full name.")
     val isoCode = zuoraCodeByCountry(country)
     isoCode match {
       case _ if UK.contains(isoCode) => "GBP"
@@ -18,9 +19,10 @@ object Country {
 
   def toFutureGuardianWeeklyProductId(country: String, currency: String): String = {
     val isoCode = zuoraCodeByCountry(country)
+    require(isoCode.length == 2, "Country ISO code should be ISO alpha-2 code")
     isoCode match {
       case _ if RestOfTheWorld.contains(isoCode) => Config.Zuora.New.guardianWeeklyRowProductId
-      case _ if standardCurrency(isoCode) == currency => Config.Zuora.New.guardianWeeklyDomesticProductId
+      case _ if standardCurrency(country) == currency => Config.Zuora.New.guardianWeeklyDomesticProductId
       case _ => Config.Zuora.New.guardianWeeklyRowProductId
     }
   }
