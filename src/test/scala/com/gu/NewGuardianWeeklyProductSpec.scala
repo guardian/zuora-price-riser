@@ -59,7 +59,7 @@ object DummyCatalog {
   val genericWeeklyProduct = NewGuardianWeeklyProduct(
     productRatePlanName = "GW",
     billingPeriod = "Quarter",
-    productRatePlanId = "id1",
+    productRatePlanId = Config.Zuora.New.guardianWeeklyProductRatePlanIds.head,
     productRatePlanChargeId = "id2",
     pricing = List(),
     taxCode = "Guardian Weekly"
