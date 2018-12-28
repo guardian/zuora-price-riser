@@ -14,6 +14,7 @@ case object HolidaysAndRetentionDiscountsWereNotRemoved extends PriceRisePostCon
 case object CurrencyDidNotChange extends PriceRisePostCondition
 case object PriceHasBeenRaised extends PriceRisePostCondition
 case object DeliveryCountryDidNotChange extends PriceRisePostCondition
+case object PriceShouldNotChangeOnSubsequentRenewals extends PriceRisePostCondition
 
 /**
   * Checks post-conditions after the price rise has been writen to Zuora.
@@ -58,6 +59,7 @@ object CheckPriceRisePostConditions {
       CurrencyDidNotChange -> Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.head.currency == accountBefore.billingAndPayment.currency).getOrElse(false),
       PriceHasBeenRaised -> Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.head.price.get == priceRise.newPrice).getOrElse(false),
       DeliveryCountryDidNotChange -> (accountBefore.soldToContact.country == accountAfter.soldToContact.country),
+      PriceShouldNotChangeOnSubsequentRenewals -> Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.head.priceChangeOption == "NoChange").getOrElse(false),
     ).partition(_._2)
 
     unsatisfied.map(_._1)

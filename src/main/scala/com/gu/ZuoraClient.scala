@@ -17,6 +17,7 @@ case class RatePlanCharge(
   effectiveEndDate: LocalDate,
   processedThroughDate: Option[LocalDate],
   chargedThroughDate: Option[LocalDate],
+  priceChangeOption: String,
 )
 
 case class RatePlan(
