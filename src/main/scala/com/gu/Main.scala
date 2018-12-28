@@ -22,47 +22,49 @@ object Main extends App with LazyLogging {
 
   logger.info(s"Start processing $filename...")
 
+  var unsatisfiedPreConditionsCount = List.empty[Any]
+  var successfullyAppliedCount = 0
+
   FileImporter.importCsv(filename).foreach {
     case Left(importError) =>
       Abort(s"Bad import file: $importError")
 
     case Right(priceRise) =>
-      // **************************************************************************************************************
+      // **********************************************************************************************
       // 1. GET CURRENT ZUORA DATA
-      // **************************************************************************************************************
+      // **********************************************************************************************
       val newGuardianWeeklyProductCatalogue = ZuoraClient.getNewGuardianWeeklyProductCatalogue
       val subscriptionBefore = ZuoraClient.getSubscription(priceRise.subscriptionName)
       val accountBefore = ZuoraClient.getAccount(subscriptionBefore.accountNumber)
 
-      // **************************************************************************************************************
+      val currentSubscription = CurrentGuardianWeeklySubscription(subscriptionBefore, accountBefore)
+      val priceRiseRequest = PriceRiseRequestBuilder(subscriptionBefore, currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
+      val extendTermRequestOpt = ExtendTermRequestBuilder(subscriptionBefore, currentSubscription)
+      // **********************************************************************************************
       // 2. CHECK PRE-CONDITIONS
-      // **************************************************************************************************************
-
+      // **********************************************************************************************
       val skipReasons = Skip(subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue, priceRise)
+      val unsatisfiedPreConditions =
+        CheckPriceRisePreConditions(priceRise, subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue
+        ) ++ CheckPriceRiseRequestPreConditions(priceRiseRequest, currentSubscription)
+
       if (skipReasons.nonEmpty) {
         logger.info(s"${priceRise.subscriptionName} skipped because $skipReasons")
-      } else {
-
-        val currentSubscription = CurrentGuardianWeeklySubscription(subscriptionBefore, accountBefore)
-        val priceRiseRequest = PriceRiseRequestBuilder(subscriptionBefore, currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
-        val extendTermRequestOpt = ExtendTermRequestBuilder(subscriptionBefore, currentSubscription)
-
-        val unsatisfiedPreConditions =
-          CheckPriceRisePreConditions(priceRise, subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue
-          ) ++ CheckPriceRiseRequestPreConditions(priceRiseRequest, currentSubscription)
-
-        if (unsatisfiedPreConditions.nonEmpty)
-          Abort(s"${priceRise.subscriptionName} failed because of unsatisfied pre-conditions: $unsatisfiedPreConditions")
-
-        // ************************************************************************************************************
+      }
+      else if(unsatisfiedPreConditions.nonEmpty) {
+        unsatisfiedPreConditionsCount = unsatisfiedPreConditionsCount ++ unsatisfiedPreConditions
+        logger.warn(s"${subscriptionBefore.subscriptionNumber} skipped because of unsatisfied preconditions: $unsatisfiedPreConditions")
+      }
+      else {
+        // **********************************************************************************************
         // 3. MUTATE
-        // ************************************************************************************************************
+        // **********************************************************************************************
         extendTermRequestOpt.map(extendTerm => ZuoraClient.extendTerm(priceRise.subscriptionName, extendTerm))
         val priceRiseResponse = ZuoraClient.removeAndAddAProductRatePlan(priceRise.subscriptionName, priceRiseRequest)
 
-        // ************************************************************************************************************
+        // **********************************************************************************************
         // 4. CHECK POST-CONDITIONS
-        // ************************************************************************************************************
+        // **********************************************************************************************
         if (!priceRiseResponse.success)
           Abort(s"Failed price rise request for ${priceRise.subscriptionName}: $priceRiseResponse")
         val subscriptionAfter = ZuoraClient.getSubscription(priceRise.subscriptionName)
@@ -72,13 +74,20 @@ object Main extends App with LazyLogging {
           Abort(s"${priceRise.subscriptionName} failed because of unsatisfied post-conditions: $unsatisfiedPostConditions")
         val newGuardianWeeklySubscription = NewGuardianWeeklySubscription(subscriptionAfter, accountAfter, newGuardianWeeklyProductCatalogue)
 
-        // ************************************************************************************************************
+        // **********************************************************************************************
         // 5. LOG SUCCESS
-        // ************************************************************************************************************
+        // **********************************************************************************************
+        successfullyAppliedCount = successfullyAppliedCount + 1
         logger.info(s"${priceRise.subscriptionName} successfully applied price rise: $newGuardianWeeklySubscription")
       }
   }
 
-  logger.info(s"Successfully completed $filename")
+  if (unsatisfiedPreConditionsCount.isEmpty)
+    logger.info(s"Successfully completed $filename")
+  else {
+    logger.info(s"Finished processing $filename")
+    logger.info(s"Successfully applied: $successfullyAppliedCount")
+    logger.warn(s"Skipped due to unsatisfied preconditions: ${unsatisfiedPreConditionsCount.size}")
+  }
 }
 
