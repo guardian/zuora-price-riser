@@ -52,6 +52,12 @@ class NewGuardianWeeklyProductSpec extends FlatSpec with Matchers {
     assert(selection == DummyCatalog.rowAnnual)
   }
 
+  it should "throw exception if the currency does not exist" in {
+    val currentGuardianWeeklySubscription = genericSubscription.copy(billingPeriod = "Annual", currency = "Dinar", country = "United States")
+    assertThrows[RuntimeException] {
+      NewGuardianWeeklyProduct(currentGuardianWeeklySubscription, DummyCatalog.catalog)
+    }
+  }
 }
 
 object DummyCatalog {
@@ -61,7 +67,7 @@ object DummyCatalog {
     billingPeriod = "Quarter",
     productRatePlanId = Config.Zuora.New.guardianWeeklyProductRatePlanIds.head,
     productRatePlanChargeId = "id2",
-    pricing = List(),
+    pricing = List(Price("GBP", 3.3f), Price("AUD", 2.2f), Price("USD", 8.8f)),
     taxCode = "Guardian Weekly"
   )
 
