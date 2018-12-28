@@ -9,7 +9,7 @@ case class NewGuardianWeeklySubscription(
   currency: String,
   country: String,
   productRatePlanId: String,
-  productRatePlanChargeId: String,
+  productRatePlanChargeId: String
 )
 
 object DefaultCataloguePrice {
