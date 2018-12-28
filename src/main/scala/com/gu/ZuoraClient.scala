@@ -17,6 +17,7 @@ case class RatePlanCharge(
   effectiveEndDate: LocalDate,
   processedThroughDate: Option[LocalDate],
   chargedThroughDate: Option[LocalDate],
+  priceChangeOption: String,
 )
 
 case class RatePlan(
@@ -87,7 +88,7 @@ case class Price(
 )
 
 case class RemoveRatePlan(ratePlanId: String, contractEffectiveDate: LocalDate)
-case class ChargeOverride(productRatePlanChargeId: String, price: Float)
+case class ChargeOverride(productRatePlanChargeId: String, price: Float, priceChangeOption: String = "NoChange")
 case class AddProductRatePlan(productRatePlanId: String, contractEffectiveDate: LocalDate, chargeOverrides: Option[List[ChargeOverride]])
 
 case class PriceRiseRequest(
