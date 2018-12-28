@@ -68,6 +68,145 @@ object Config {
           "2c92a0086619bf8901661ab02752722f", // "name":"GW Oct 18 - Quarterly - ROW"
         )
       }
+
+      val guardianWeeklyProductCatalogue = stage match {
+        case "DEV" =>
+          NewGuardianWeeklyProductCatalogue(
+            List(
+              NewGuardianWeeklyProduct(
+                "GW Oct 18 - Annual - Domestic",
+                "Annual",
+                "2c92c0f965d280590165f16b1b9946c2",
+                "2c92c0f965d280590165f16b1ba946c4",
+                List(
+                  Price("USD", 300.0F),
+                  Price("NZD", 492.0F),
+                  Price("EUR", 245.2F),
+                  Price("GBP", 150.0F),
+                  Price("CAD", 320.0F),
+                  Price("AUD", 390.0F)
+                ),
+                "Guardian Weekly"
+              ),
+              NewGuardianWeeklyProduct(
+                "GW Oct 18 - Quarterly - Domestic",
+                "Quarter",
+                "2c92c0f965dc30640165f150c0956859",
+                "2c92c0f865d273010165f16ada0a4346",
+                List(
+                  Price("USD", 75.0F),
+                  Price("NZD", 123.0F),
+                  Price("EUR", 61.3F),
+                  Price("GBP", 37.5F),
+                  Price("CAD", 80.0F),
+                  Price("AUD", 97.5F)
+                ),
+                "Guardian Weekly"
+              )
+            ),
+            List(
+              NewGuardianWeeklyProduct(
+                "GW Oct 18 - Quarterly - ROW",
+                "Quarter",
+                "2c92c0f965f2122101660fb81b745a06",
+                "2c92c0f965f2122101660fb81b875a0b",
+                List(
+                  Price("USD", 81.3F),
+                  Price("NZD", 132.5F),
+                  Price("EUR", 67.5F),
+                  Price("GBP", 60.0F),
+                  Price("CAD", 86.25F),
+                  Price("AUD", 106.0F)
+                ),
+                "Guardian Weekly"
+              ),
+              NewGuardianWeeklyProduct(
+                "GW Oct 18 - Annual - ROW",
+                "Annual",
+                "2c92c0f965f2122101660fb33ed24a45",
+                "2c92c0f965f2122101660fb6ac46550e",
+                List(
+                  Price("USD", 325.2F),
+                  Price("NZD", 530.0F),
+                  Price("EUR", 270.0F),
+                  Price("GBP", 240.0F),
+                  Price("CAD", 345.0F),
+                  Price("AUD", 424.0F)
+                ),
+                "Guardian Weekly"
+              )
+            )
+          )
+
+        case "PROD" =>
+          NewGuardianWeeklyProductCatalogue(
+            List(
+              NewGuardianWeeklyProduct(
+                "GW Oct 18 - Annual - Domestic",
+                "Annual",
+                "2c92a0fe6619b4b901661aa8e66c1692",
+                "2c92a0fe6619b4b901661aa8e6811695",
+                List(
+                  Price("USD", 300.0F),
+                  Price("NZD", 492.0F),
+                  Price("EUR", 245.2F),
+                  Price("GBP", 150.0F),
+                  Price("CAD", 320.0F),
+                  Price("AUD", 390.0F)
+                ),
+                "Guardian Weekly"
+              ),
+              NewGuardianWeeklyProduct(
+                "GW Oct 18 - Quarterly - Domestic",
+                "Quarter",
+                "2c92a0fe6619b4b301661aa494392ee2",
+                "2c92a0fe6619b4b601661aa8b74e623f",
+                List(
+                  Price("USD", 75.0F),
+                  Price("NZD", 123.0F),
+                  Price("EUR", 61.3F),
+                  Price("GBP", 37.5F),
+                  Price("CAD", 80.0F),
+                  Price("AUD", 97.5F)
+                ),
+                "Guardian Weekly"
+              )
+            ),
+            List(
+              NewGuardianWeeklyProduct(
+                "GW Oct 18 - Annual - ROW",
+                "Annual",
+                "2c92a0fe6619b4b601661ab300222651",
+                "2c92a0fe6619b4b601661ab3002f2653",
+                List(
+                  Price("USD", 325.2F),
+                  Price("NZD", 530.0F),
+                  Price("EUR", 270.0F),
+                  Price("GBP", 240.0F),
+                  Price("CAD", 345.0F),
+                  Price("AUD", 424.0F)
+                ),
+                "Guardian Weekly"
+              ),
+              NewGuardianWeeklyProduct(
+                "GW Oct 18 - Quarterly - ROW",
+                "Quarter",
+                "2c92a0086619bf8901661ab02752722f",
+                "2c92a0ff6619bf8b01661ab2d0396eb2",
+                List(
+                  Price("USD", 81.3F),
+                  Price("NZD", 132.5F),
+                  Price("EUR", 67.5F),
+                  Price("GBP", 60.0F),
+                  Price("CAD", 86.25F),
+                  Price("AUD", 106.0F)
+                ),
+                "Guardian Weekly"
+              )
+            )
+          )
+
+      }
     }
 
     // Do not remove Holiday and Retention Discounts (Cancellation Save Discount)
