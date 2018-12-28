@@ -31,5 +31,7 @@ lazy val root = (project in file(".")).
         |com.gu.Main*;
         |com.gu.Config*;
       """.stripMargin,
-    trapExit := false
+    trapExit := false,
+    fork in Test := true,
+    envVars in Test := Map("ZUORA_STAGE" -> "DEV")
   )
