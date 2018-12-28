@@ -81,7 +81,7 @@ case class NewGuardianWeeklyProduct(
 }
 
 /**
-  * Find new GuardianWeeklyProduct using billingPeriod and delivery country.
+  * Find new GuardianWeeklyProduct on the basis of current billingPeriod, delivery country and currency.
   */
 object NewGuardianWeeklyProduct {
   def apply(
@@ -94,6 +94,7 @@ object NewGuardianWeeklyProduct {
       case Config.Zuora.New.guardianWeeklyRowProductId => newGuardianWeeklyProductCatalogue.restOfTheWorld
     })
       .find(_.billingPeriod == currentGuardianWeeklySubscription.billingPeriod)
+      .find(_.pricing.map(_.currency).contains(currentGuardianWeeklySubscription.currency)) // make sure currency exists (could be disabled in Zuora)
       .getOrElse(throw new RuntimeException(s"${currentGuardianWeeklySubscription.subscriptionNumber} failed to determine NewGuardianWeeklyProduct"))
 
   }
