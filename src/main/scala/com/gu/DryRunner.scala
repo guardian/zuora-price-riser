@@ -11,14 +11,16 @@ object DryRunner extends App with LazyLogging {
     Abort("Please provide import filename")
   val filename = args(0)
 
-  logger.info(s"Start dry run processing $filename...")
+  val csvImport = FileImporter.importCsv(filename)
 
+  val importSize = csvImport.size
   var unsatisfiedPreConditionsCount = List.empty[Any]
   var skipReasonsCount = List.empty[SkipReason]
   var termExtensionCount = 0
   var readyToApplyCount = 0 // pre-conditions passed
 
-  FileImporter.importCsv(filename).foreach {
+  logger.info(s"Start dry run processing $importSize records from $filename...")
+  csvImport.foreach {
     case Left(importError) =>
       Abort(s"Bad import file: $importError")
 
@@ -62,6 +64,7 @@ object DryRunner extends App with LazyLogging {
   logger.info(s"--------------------------------------------------------------")
   logger.info(s"Results (count):")
   logger.info(s"--------------------------------------------------------------")
+  logger.info(s"Import size: $importSize")
   logger.info(s"Ready to apply: $readyToApplyCount")
 
   unsatisfiedPreConditionsCount
