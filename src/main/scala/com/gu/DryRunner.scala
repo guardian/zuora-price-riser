@@ -32,31 +32,33 @@ object DryRunner extends App with LazyLogging {
       val subscriptionBefore = ZuoraClient.getSubscription(priceRise.subscriptionName)
       val accountBefore = ZuoraClient.getAccount(subscriptionBefore.accountNumber)
 
-      val currentSubscription = CurrentGuardianWeeklySubscription(subscriptionBefore, accountBefore)
-      val priceRiseRequest = PriceRiseRequestBuilder(subscriptionBefore, currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
-      val extendTermRequestOpt = ExtendTermRequestBuilder(subscriptionBefore, currentSubscription)
       // **********************************************************************************************
       // 2. CHECK PRE-CONDITIONS
       // **********************************************************************************************
       val skipReasons = Skip(subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue, priceRise)
-      val unsatisfiedPreConditions =
-        CheckPriceRisePreConditions(priceRise, subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue
-        ) ++ CheckPriceRiseRequestPreConditions(priceRiseRequest, currentSubscription)
-
       if (skipReasons.nonEmpty) {
         skipReasonsCount = skipReasonsCount ++ skipReasons
         logger.info(s"${subscriptionBefore.subscriptionNumber} skipped because $skipReasons")
       }
-      else if(unsatisfiedPreConditions.nonEmpty) {
-        unsatisfiedPreConditionsCount = unsatisfiedPreConditionsCount ++ unsatisfiedPreConditions
-        logger.warn(s"${subscriptionBefore.subscriptionNumber} would NOT apply because of unsatisfied preconditions: $unsatisfiedPreConditions")
-      }
       else {
-        readyToApplyCount = readyToApplyCount + 1
-        logger.info(s"${subscriptionBefore.subscriptionNumber} ready to apply")
+        val currentSubscription = CurrentGuardianWeeklySubscription(subscriptionBefore, accountBefore)
+        val priceRiseRequest = PriceRiseRequestBuilder(subscriptionBefore, currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
 
-        if (extendTermRequestOpt.isDefined)
-          termExtensionCount = termExtensionCount + 1
+        val unsatisfiedPreConditions =
+          CheckPriceRisePreConditions(priceRise, subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue
+          ) ++ CheckPriceRiseRequestPreConditions(priceRiseRequest, currentSubscription)
+
+        if(unsatisfiedPreConditions.nonEmpty) {
+          unsatisfiedPreConditionsCount = unsatisfiedPreConditionsCount ++ unsatisfiedPreConditions
+          logger.warn(s"${subscriptionBefore.subscriptionNumber} would NOT apply because of unsatisfied preconditions: $unsatisfiedPreConditions")
+        }
+        else {
+          readyToApplyCount = readyToApplyCount + 1
+          logger.info(s"${subscriptionBefore.subscriptionNumber} ready to apply")
+
+          if (ExtendTermRequestBuilder(subscriptionBefore, currentSubscription).isDefined)
+            termExtensionCount = termExtensionCount + 1
+        }
       }
   }
 
