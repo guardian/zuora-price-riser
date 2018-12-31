@@ -61,4 +61,6 @@ Example error log:
 2018-12-11 16:22:41,618 [ERROR] - Aborted due to error. Please examine the logs, fix the error, and re-run the script.
 ```
 
-
+Note the difference between `SkipReason` and `CheckPriceRisePreCondition`:
+* `SkipReason` - valid business reason (for example, one off, cancelled)
+* `unsatisfied precondtions` - error in the input file or Zuora state

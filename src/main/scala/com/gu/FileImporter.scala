@@ -42,7 +42,7 @@ object FileImporter {
     termEndDate: term_end_date
   )
 
-  def importCsv(filename: String = "subs.csv"): CsvReader[ReadResult[PriceRise]] =
-    new File(filename).asCsvReader[PriceRise](rfc.withHeader)
+  def importCsv(filename: String = "subs.csv"): List[ReadResult[PriceRise]] =
+    new File(filename).asCsvReader[PriceRise](rfc.withHeader).toList
 
 }

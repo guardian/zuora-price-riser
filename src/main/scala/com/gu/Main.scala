@@ -12,6 +12,8 @@ object Main extends App with LazyLogging {
     Abort("Please provide import filename")
   val filename = args(0)
 
+  val csvImport = FileImporter.importCsv(filename)
+
   if (Config.Zuora.stage == "PROD") {
     logger.warn(Console.RED + "WARNING: Are you sure you want to run against Zuora PROD? (Y/N)" + Console.RESET)
     StdIn.readLine() match {
@@ -20,12 +22,13 @@ object Main extends App with LazyLogging {
     }
   }
 
-  logger.info(s"Start processing $filename...")
-
+  val importSize = csvImport.size
   var unsatisfiedPreConditionsCount = List.empty[Any]
+  var skipReasonsCount = List.empty[SkipReason]
   var successfullyAppliedCount = 0
 
-  FileImporter.importCsv(filename).foreach {
+  logger.info(s"Start processing $importSize records from $filename...")
+  csvImport.foreach {
     case Left(importError) =>
       Abort(s"Bad import file: $importError")
 
@@ -50,6 +53,8 @@ object Main extends App with LazyLogging {
 
       if (skipReasons.nonEmpty) {
         logger.info(s"${priceRise.subscriptionName} skipped because $skipReasons")
+        skipReasonsCount = skipReasonsCount ++ skipReasons
+        if (skipReasons.contains(PriceRiseApplied)) successfullyAppliedCount = successfullyAppliedCount + 1
       }
       else if(unsatisfiedPreConditions.nonEmpty) {
         unsatisfiedPreConditionsCount = unsatisfiedPreConditionsCount ++ unsatisfiedPreConditions
@@ -82,12 +87,15 @@ object Main extends App with LazyLogging {
       }
   }
 
-  if (unsatisfiedPreConditionsCount.isEmpty)
-    logger.info(s"Successfully completed $filename")
-  else {
-    logger.info(s"Finished processing $filename")
-    logger.info(s"Successfully applied: $successfullyAppliedCount")
+  logger.info(s"Processing completed of $importSize records from $filename")
+  logger.info(s"--------------------------------------------------------------")
+  logger.info(s"RESULTS:")
+  logger.info(s"--------------------------------------------------------------")
+  logger.info(s"Successfully applied: $successfullyAppliedCount (${math.floor(successfullyAppliedCount/importSize)}%)")
+  logger.info(s"Skipped: ${skipReasonsCount.size + unsatisfiedPreConditionsCount.size}")
+  if (unsatisfiedPreConditionsCount.nonEmpty)
     logger.warn(s"Skipped due to unsatisfied preconditions: ${unsatisfiedPreConditionsCount.size}")
-  }
+  else
+    logger.info(Console.GREEN + s"DONE.")
 }
 
