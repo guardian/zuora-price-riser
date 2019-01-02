@@ -12,15 +12,16 @@ case class NewGuardianWeeklySubscription(
   productRatePlanChargeId: String
 )
 
-object DefaultCataloguePrice {
+object NewMaximumPrice {
   def apply(
     newGuardianWeeklyProduct: NewGuardianWeeklyProduct,
     currentGuardianWeeklySubscription: CurrentGuardianWeeklySubscription
   ): Float = {
+    val newZealandCap = 1.07F
     newGuardianWeeklyProduct
       .pricing
       .find(_.currency == currentGuardianWeeklySubscription.currency)
-      .map(_.price)
+      .map(price => if (currentGuardianWeeklySubscription.country == "New Zealand") price.price * newZealandCap else price.price)
       .getOrElse(throw new RuntimeException(s"Guardian Weekly product should have a default price: $newGuardianWeeklyProduct, $currentGuardianWeeklySubscription"))
   }
 }
