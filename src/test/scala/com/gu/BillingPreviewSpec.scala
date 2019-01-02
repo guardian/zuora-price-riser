@@ -4,6 +4,7 @@ import com.gu.FileImporter.PriceRise
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.json4s.native.JsonMethods.parse
+import org.scalactic.TolerantNumerics
 import org.scalatest._
 
 class BillingPreviewSpec extends FlatSpec with Matchers with ZuoraJsonFormats {
@@ -125,13 +126,28 @@ class BillingPreviewSpec extends FlatSpec with Matchers with ZuoraJsonFormats {
       |}
     """.stripMargin
 
+  implicit val floatEq = TolerantNumerics.tolerantFloatEquality(0.01f)
+
   "BillingPreview" should "calculate tax for countries with states" in {
     val zuoraDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
     val priceRise = PriceRise("11111", "", "", LocalDate.parse("2019-01-14", zuoraDateFormat), 60.0f, 80.0f, None)
     BillingPreview(
       parse(rawAccount).extract[Account],
       parse(rawInvoiceItem).extract[InvoiceItem]
-    ) should be (priceRise.newPrice)
+    ) should === (priceRise.newPrice)
+  }
+
+  it should "calculate tax for countries where rounding is not precise (Canada, Nova Scotia)" in {
+    val zuoraDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
+    val priceRise = PriceRise("11111", "", "", LocalDate.parse("2019-01-14", zuoraDateFormat), 60.0f, 80.0f, None)
+    val account = parse(rawAccount).extract[Account]
+    val accountCanNovaScotia = account.copy(soldToContact = account.soldToContact.copy(country = "Canada", state = "Nova Scotia"))
+
+    // without triple equals it is 80.01 vs 80.00
+    BillingPreview(
+      accountCanNovaScotia,
+      parse(rawInvoiceItem).extract[InvoiceItem].copy(chargeAmount = 69.57f)
+    ) should === (priceRise.newPrice)
   }
 
   it should "calculate tax for countries without states" in {
@@ -145,7 +161,7 @@ class BillingPreviewSpec extends FlatSpec with Matchers with ZuoraJsonFormats {
     BillingPreview(
       accountGermanyNoState,
       parse(rawInvoiceItem).extract[InvoiceItem]
-    ) should equal (priceRise.newPrice)
+    ) should === (priceRise.newPrice)
   }
 
   it should "not apply tax for countries without tax" in {
@@ -157,6 +173,6 @@ class BillingPreviewSpec extends FlatSpec with Matchers with ZuoraJsonFormats {
     BillingPreview(
       accountLatviaNoTax,
       parse(rawInvoiceItem).extract[InvoiceItem]
-    ) should equal (priceRise.newPrice)
+    ) should === (priceRise.newPrice)
   }
 }
