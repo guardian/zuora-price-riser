@@ -63,7 +63,12 @@ object CheckPriceRisePostConditions {
       PriceHasBeenRaised -> Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.head.price.get == priceRise.newPrice).getOrElse(false),
       DeliveryCountryDidNotChange -> (accountBefore.soldToContact.country == accountAfter.soldToContact.country),
       PriceShouldNotChangeOnSubsequentRenewals -> Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.head.priceChangeOption == "NoChange").getOrElse(false),
-      InvoiceShouldHaveTheNewPrice -> (BillingPreview(accountAfter, invoiceItem) == priceRise.newPrice),
+      InvoiceShouldHaveTheNewPrice -> {
+        import org.scalactic.TolerantNumerics
+        import org.scalactic.TripleEquals._
+        implicit val floatEq = TolerantNumerics.tolerantFloatEquality(0.01f)
+        BillingPreview(accountAfter, invoiceItem) === priceRise.newPrice
+      },
       InvoiceStartDateShouldBeOnThePriceRiseDate -> invoiceItem.serviceStartDate.isEqual(priceRise.priceRiseDate),
     ).partition(_._2)
 

@@ -18,8 +18,8 @@ object BillingPreview {
       val tax = taxBy(country -> state)
       val chargeAmount = invoiceItem.chargeAmount
       val chargeWithTax = chargeAmount * (1 + tax)
-      val roundedPrice = (math rint chargeWithTax * 100) / 100 // https://stackoverflow.com/a/11107546/5205022
-      roundedPrice.toFloat
+      val roundedPrice = BigDecimal(chargeWithTax).setScale(2, BigDecimal.RoundingMode.HALF_UP).toFloat // https://stackoverflow.com/a/11107005/5205022
+      roundedPrice
     }
     else {
       invoiceItem.chargeAmount
