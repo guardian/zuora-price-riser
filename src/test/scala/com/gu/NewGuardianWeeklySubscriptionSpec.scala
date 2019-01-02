@@ -18,12 +18,13 @@ class NewGuardianWeeklySubscriptionSpec extends FlatSpec with Matchers with Zuor
   val newGuardianWeeklyProductCatalogue = Config.Zuora.New.guardianWeeklyProductCatalogue
   val priceRise = PriceRise("A-S00045676", "", "", LocalDate.parse("2019-07-27", zuoraDateFormat), 312.0f, 390.0f, None)
   val currentSubscription = CurrentGuardianWeeklySubscription(subscriptionBefore, accountBefore)
+  val invoiceItem = InvoiceItem("", "", LocalDate.parse("2019-07-27", zuoraDateFormat), LocalDate.parse("2019-07-27", zuoraDateFormat), (390 / 1.1).toFloat, "", "")
 
   val priceRiseRequest = PriceRiseRequestBuilder(subscriptionBefore, currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
 
   "NewGuardianWeeklySubscription" should "should satisfy all CheckPriceRisePostConditions" in {
     val unsatisfiedPostConditions = CheckPriceRisePostConditions(
-        subscriptionAfter, accountBefore, accountAfter, newGuardianWeeklyProductCatalogue, priceRise, currentSubscription)
+        subscriptionAfter, accountBefore, accountAfter, newGuardianWeeklyProductCatalogue, priceRise, currentSubscription, invoiceItem)
 
     val newGuardianWeeklySubscription = NewGuardianWeeklySubscription(subscriptionAfter, accountAfter, newGuardianWeeklyProductCatalogue)
 
@@ -35,8 +36,8 @@ class NewGuardianWeeklySubscriptionSpec extends FlatSpec with Matchers with Zuor
 
   it should "list failed postconditions" in {
     val unsatisfiedPostConditions = CheckPriceRisePostConditions(
-        subscriptionAfter, accountBefore, accountAfter, newGuardianWeeklyProductCatalogue, priceRise.copy(newPrice = 1000), currentSubscription)
+        subscriptionAfter, accountBefore, accountAfter, newGuardianWeeklyProductCatalogue, priceRise.copy(newPrice = 1000), currentSubscription, invoiceItem)
 
-    unsatisfiedPostConditions should be (List(PriceHasBeenRaised))
+    unsatisfiedPostConditions should be (List(PriceHasBeenRaised, InvoiceShouldHaveTheNewPrice))
   }
 }
