@@ -1,5 +1,6 @@
 package com.gu
 
+import com.gu.FileImporter.PriceRise
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import scalaj.http.{BaseHttp, Http, HttpOptions}
@@ -58,7 +59,8 @@ case class BillingAndPayment(
 
 case class SoldToContact(
   country: String,
-  workEmail: String
+  workEmail: String,
+  state: String
 )
 
 case class Account(
@@ -104,6 +106,21 @@ case class Reason(
 case class PriceRiseResponse(
   success: Boolean,
   reasons: Option[List[Reason]]
+)
+
+case class InvoiceItem(
+  id: String,
+  subscriptionNumber: String,
+  serviceStartDate: LocalDate,
+  serviceEndDate: LocalDate,
+  chargeAmount: Float,
+  chargeName: String,
+  productName: String
+)
+
+case class BillingPreviewBody(
+  accountId: String,
+  targetDate: LocalDate
 )
 
 object LocalDateSerializer extends CustomSerializer[LocalDate](format => ({
@@ -239,6 +256,27 @@ object ZuoraClient extends ZuoraJsonFormats {
     response.code match {
       case 200 => parse(response.body).extract[PriceRiseResponse]
       case _ => throw new RuntimeException(s"$subscriptionName failed to raise price due to Zuora networking issue: $response")
+    }
+  }
+
+  def billingPreview(
+    account: Account,
+    priceRise: PriceRise,
+  ): InvoiceItem = {
+    val body = BillingPreviewBody(account.basicInfo.id, priceRise.priceRiseDate)
+    val response = HttpWithLongTimeout(s"$host/v1/operations/billing-preview")
+      .header("Authorization", s"Bearer $accessToken")
+      .header("content-type", "application/json")
+      .postData(write(body))
+      .method("POST")
+      .asString
+
+    response.code match {
+      case 200 => (parse(response.body) \ "invoiceItems").extract[List[InvoiceItem]].headOption match {
+        case Some(invoiceItem) => invoiceItem
+        case None => throw new RuntimeException(s"No invoice found for $body: $response")
+      }
+      case _ => throw new RuntimeException(s"${account.basicInfo.id} failed to get billing preview due to Zuora networking issue: $response")
     }
   }
 }

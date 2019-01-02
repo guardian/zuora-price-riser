@@ -23,8 +23,8 @@ object Main extends App with LazyLogging {
   }
 
   val importSize = csvImport.size
-  var unsatisfiedPreConditionsCount = List.empty[Any]
-  var skipReasonsCount = List.empty[SkipReason]
+  var unsatisfiedPreConditionsCount = 0
+  var skipReasonsCount = 0
   var successfullyAppliedCount = 0
 
   logger.info(s"Start processing $importSize records from $filename...")
@@ -46,7 +46,7 @@ object Main extends App with LazyLogging {
       val skipReasons = Skip(subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue, priceRise)
       if (skipReasons.nonEmpty) {
         logger.info(s"${priceRise.subscriptionName} skipped because $skipReasons")
-        skipReasonsCount = skipReasonsCount ++ skipReasons
+        skipReasonsCount = skipReasonsCount + 1
         if (skipReasons.contains(PriceRiseApplied)) successfullyAppliedCount = successfullyAppliedCount + 1
       }
       else {
@@ -58,7 +58,7 @@ object Main extends App with LazyLogging {
           ) ++ CheckPriceRiseRequestPreConditions(priceRiseRequest, currentSubscription)
 
         if(unsatisfiedPreConditions.nonEmpty) {
-          unsatisfiedPreConditionsCount = unsatisfiedPreConditionsCount ++ unsatisfiedPreConditions
+          unsatisfiedPreConditionsCount = unsatisfiedPreConditionsCount + 1
           logger.warn(s"${subscriptionBefore.subscriptionNumber} skipped because of unsatisfied preconditions: $unsatisfiedPreConditions")
         }
         else {
@@ -75,7 +75,8 @@ object Main extends App with LazyLogging {
             Abort(s"Failed price rise request for ${priceRise.subscriptionName}: $priceRiseResponse")
           val subscriptionAfter = ZuoraClient.getSubscription(priceRise.subscriptionName)
           val accountAfter = ZuoraClient.getAccount(subscriptionBefore.accountNumber)
-          val unsatisfiedPostConditions = CheckPriceRisePostConditions(subscriptionAfter, accountBefore, accountAfter, newGuardianWeeklyProductCatalogue, priceRise, currentSubscription)
+          val invoiceItem = ZuoraClient.billingPreview(accountAfter, priceRise)
+          val unsatisfiedPostConditions = CheckPriceRisePostConditions(subscriptionAfter, accountBefore, accountAfter, newGuardianWeeklyProductCatalogue, priceRise, currentSubscription, invoiceItem)
           if (unsatisfiedPostConditions.nonEmpty)
             Abort(s"${priceRise.subscriptionName} failed because of unsatisfied post-conditions: $unsatisfiedPostConditions")
           val newGuardianWeeklySubscription = NewGuardianWeeklySubscription(subscriptionAfter, accountAfter, newGuardianWeeklyProductCatalogue)
@@ -93,10 +94,10 @@ object Main extends App with LazyLogging {
   logger.info(s"--------------------------------------------------------------")
   logger.info(s"RESULTS:")
   logger.info(s"--------------------------------------------------------------")
-  logger.info(s"Successfully applied: $successfullyAppliedCount (${math.floor(successfullyAppliedCount/importSize)}%)")
-  logger.info(s"Skipped: ${skipReasonsCount.size + unsatisfiedPreConditionsCount.size}")
-  if (unsatisfiedPreConditionsCount.nonEmpty)
-    logger.warn(s"Skipped due to unsatisfied preconditions: ${unsatisfiedPreConditionsCount.size}")
+  logger.info(s"Successfully applied: $successfullyAppliedCount (${math.floor(successfullyAppliedCount/importSize) * 100}%)")
+  logger.info(s"Skipped: ${skipReasonsCount + unsatisfiedPreConditionsCount}")
+  if (unsatisfiedPreConditionsCount != 0)
+    logger.warn(s"Skipped due to unsatisfied preconditions: $unsatisfiedPreConditionsCount")
   else
     logger.info(Console.GREEN + s"DONE.")
 }

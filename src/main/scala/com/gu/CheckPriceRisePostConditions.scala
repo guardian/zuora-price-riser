@@ -15,6 +15,8 @@ case object CurrencyDidNotChange extends PriceRisePostCondition
 case object PriceHasBeenRaised extends PriceRisePostCondition
 case object DeliveryCountryDidNotChange extends PriceRisePostCondition
 case object PriceShouldNotChangeOnSubsequentRenewals extends PriceRisePostCondition
+case object InvoiceShouldHaveTheNewPrice extends PriceRisePostCondition
+case object InvoiceStartDateShouldBeOnThePriceRiseDate extends PriceRisePostCondition
 
 /**
   * Checks post-conditions after the price rise has been writen to Zuora.
@@ -29,7 +31,8 @@ object CheckPriceRisePostConditions {
       accountAfter: Account,
       newGuardianWeeklyProductCatalogue: NewGuardianWeeklyProductCatalogue,
       priceRise: PriceRise,
-      currentGuardianWeeklySubscription: CurrentGuardianWeeklySubscription
+      currentGuardianWeeklySubscription: CurrentGuardianWeeklySubscription,
+      invoiceItem: InvoiceItem,
   ): UnsatisfiedPriceRisePostConditions = {
 
     val newGuardianWeeklyRatePlans =
@@ -60,6 +63,8 @@ object CheckPriceRisePostConditions {
       PriceHasBeenRaised -> Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.head.price.get == priceRise.newPrice).getOrElse(false),
       DeliveryCountryDidNotChange -> (accountBefore.soldToContact.country == accountAfter.soldToContact.country),
       PriceShouldNotChangeOnSubsequentRenewals -> Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.head.priceChangeOption == "NoChange").getOrElse(false),
+      InvoiceShouldHaveTheNewPrice -> (BillingPreview(accountAfter, invoiceItem) == priceRise.newPrice),
+      InvoiceStartDateShouldBeOnThePriceRiseDate -> invoiceItem.serviceStartDate.isEqual(priceRise.priceRiseDate),
     ).partition(_._2)
 
     unsatisfied.map(_._1)
