@@ -120,7 +120,8 @@ case class InvoiceItem(
 
 case class BillingPreviewBody(
   accountId: String,
-  targetDate: LocalDate
+  targetDate: LocalDate,
+  assumeRenewal: String = "All"
 )
 
 object LocalDateSerializer extends CustomSerializer[LocalDate](format => ({
