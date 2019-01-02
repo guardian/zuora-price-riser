@@ -38,7 +38,7 @@ object CheckPriceRisePreConditions {
       SubscriptionIsActive -> (subscription.status == "Active"),
       PriceRiseDateIsOnInvoicedPeriodEndDate -> currentGuardianWeeklySubscription.invoicedPeriod.endDateExcluding.isEqual(priceRise.priceRiseDate),
       TargetPriceRiseIsNotMoreThanTheCap -> (priceRise.newPrice < currentGuardianWeeklySubscription.price * Config.priceRiseFactorCap),
-      TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice -> (priceRise.newPrice <= NewMaximumPrice(futureGuardianWeeklyProducts, currentGuardianWeeklySubscription)),
+      TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice -> (priceRise.newPrice <= CatalogPriceExceptNZ(futureGuardianWeeklyProducts, currentGuardianWeeklySubscription)),
       TargetPriceRiseIsMoreThanTheCurrentPrice -> (priceRise.newPrice > currentGuardianWeeklySubscription.price),
       CurrentlyActiveProductRatePlanIsGuardianWeeklyRatePlan -> Config.Zuora.Old.guardianWeeklyProductRatePlanIds.contains(currentGuardianWeeklySubscription.productRatePlanId),
       BillingPeriodIsQuarterlyOrAnnually -> List("Annual", "Quarter").contains(currentGuardianWeeklySubscription.billingPeriod),

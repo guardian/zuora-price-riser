@@ -12,17 +12,27 @@ case class NewGuardianWeeklySubscription(
   productRatePlanChargeId: String
 )
 
-object NewMaximumPrice {
+object CatalogPriceExceptNZ {
   def apply(
     newGuardianWeeklyProduct: NewGuardianWeeklyProduct,
     currentGuardianWeeklySubscription: CurrentGuardianWeeklySubscription
   ): Float = {
-    val newZealandCap = 1.07F
-    newGuardianWeeklyProduct
-      .pricing
-      .find(_.currency == currentGuardianWeeklySubscription.currency)
-      .map(price => if (currentGuardianWeeklySubscription.country == "New Zealand") price.price * newZealandCap else price.price)
-      .getOrElse(throw new RuntimeException(s"Guardian Weekly product should have a default price: $newGuardianWeeklyProduct, $currentGuardianWeeklySubscription"))
+
+    def findCatalogPrice = {
+      newGuardianWeeklyProduct
+        .pricing
+        .find(_.currency == currentGuardianWeeklySubscription.currency)
+        .map(_.price)
+        .getOrElse(throw new RuntimeException(s"Guardian Weekly product should have a default price: $newGuardianWeeklyProduct, $currentGuardianWeeklySubscription"))
+    }
+
+    if (currentGuardianWeeklySubscription.country == "New Zealand" && currentGuardianWeeklySubscription.currency != "NZD") {
+      val newZealandCap = 1.07F
+      findCatalogPrice * newZealandCap
+    } else {
+      findCatalogPrice
+    }
+
   }
 }
 
