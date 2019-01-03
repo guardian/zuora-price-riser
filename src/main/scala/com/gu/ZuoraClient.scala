@@ -260,7 +260,7 @@ object ZuoraClient extends ZuoraJsonFormats {
     }
   }
 
-  def billingPreview(
+  def newGuardianWeeklyInvoicePreview(
     account: Account,
     priceRise: PriceRise,
   ): InvoiceItem = {

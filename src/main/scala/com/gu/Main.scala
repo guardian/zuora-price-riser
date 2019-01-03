@@ -75,7 +75,7 @@ object Main extends App with LazyLogging {
             Abort(s"Failed price rise request for ${priceRise.subscriptionName}: $priceRiseResponse")
           val subscriptionAfter = ZuoraClient.getSubscription(priceRise.subscriptionName)
           val accountAfter = ZuoraClient.getAccount(subscriptionBefore.accountNumber)
-          val invoiceItem = ZuoraClient.billingPreview(accountAfter, priceRise)
+          val invoiceItem = ZuoraClient.newGuardianWeeklyInvoicePreview(accountAfter, priceRise)
           val unsatisfiedPostConditions = CheckPriceRisePostConditions(subscriptionAfter, accountBefore, accountAfter, newGuardianWeeklyProductCatalogue, priceRise, currentSubscription, invoiceItem)
           if (unsatisfiedPostConditions.nonEmpty)
             Abort(s"${priceRise.subscriptionName} failed because of unsatisfied post-conditions: $unsatisfiedPostConditions")
