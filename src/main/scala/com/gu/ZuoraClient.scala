@@ -273,9 +273,9 @@ object ZuoraClient extends ZuoraJsonFormats {
       .asString
 
     response.code match {
-      case 200 => (parse(response.body) \ "invoiceItems").extract[List[InvoiceItem]].headOption match {
-        case Some(invoiceItem) => invoiceItem
-        case None => throw new RuntimeException(s"No invoice found for $body: $response")
+      case 200 => (parse(response.body) \ "invoiceItems").extract[List[InvoiceItem]].filter(_.productName != "Discounts") match {
+        case List(singleInvoiceItem) => singleInvoiceItem
+        case _ => throw new RuntimeException(s"Expected to find a single invoice item after excluding Discounts, but got $body: $response")
       }
       case _ => throw new RuntimeException(s"${account.basicInfo.id} failed to get billing preview due to Zuora networking issue: $response")
     }
