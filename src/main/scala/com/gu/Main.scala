@@ -94,7 +94,7 @@ object Main extends App with LazyLogging {
   logger.info(s"--------------------------------------------------------------")
   logger.info(s"RESULTS:")
   logger.info(s"--------------------------------------------------------------")
-  logger.info(s"Successfully applied: $successfullyAppliedCount (${math.floor(successfullyAppliedCount/importSize) * 100}%)")
+  logger.info(s"Successfully applied: $successfullyAppliedCount (${math.floor((successfullyAppliedCount.toFloat * 100) / importSize)}%)")
   logger.info(s"Skipped: ${skipReasonsCount + unsatisfiedPreConditionsCount}")
   if (unsatisfiedPreConditionsCount != 0)
     logger.warn(s"Skipped due to unsatisfied preconditions: $unsatisfiedPreConditionsCount")
