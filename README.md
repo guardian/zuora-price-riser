@@ -46,21 +46,22 @@ Make sure to run the script after the bill run completes for the day. Currently 
  
 4. Tail the logs: `tail -f logs/application.log`
 
-## Errors handling
+## Errors
 
-Script is designed to stop on first error it encounters. After the error:
-  1. examine the logs to determine the cause,
-  2. fix the cause
-  3. re-run the script (the script should be idempotent)
-  
-Example error log:
+The script is *idempotent*, that is, re-running the script should have no effect on the subscriptions that have price rise already scheduled.
 
+Get all the subscriptions which failed:
+
+`cat Price_Rise_Official_Notice_19Nov_Updated.csv.log | grep -i unsatisfied`
 ```
-2018-12-11 16:22:38,316 [INFO] - Start processing subs.csv...
-2018-12-11 16:22:41,618 [ERROR] - A-S00048031 failed because of unsatisfied pre-conditions: List(ImportHasCorrectCurrentPrice, TargetPriceRiseIsNotMoreThanTheCap)
-2018-12-11 16:22:41,618 [ERROR] - Aborted due to error. Please examine the logs, fix the error, and re-run the script.
+2019-01-03 11:20:07,639 [WARN] - 446253 skipped because of unsatisfied preconditions: List(PriceRiseDateIsOnInvoicedPeriodEndDate)
+2019-01-03 11:20:21,277 [WARN] - 5200 skipped because of unsatisfied preconditions: List(PriceRiseDateIsOnInvoicedPeriodEndDate)
+2019-01-03 11:20:35,178 [WARN] - 437187 skipped because of unsatisfied preconditions: List(PriceRiseDateIsOnInvoicedPeriodEndDate)
+...
 ```
 
 Note the difference between `SkipReason` and `CheckPriceRisePreCondition`:
 * `SkipReason` - valid business reason (for example, one off, cancelled)
-* `unsatisfied precondtions` - error in the input file or Zuora state
+* `unsatisfied preconditions` - error in the input file or Zuora state
+
+The script skips the records in both cases and continues with processing, however `unsatisfied preconditions` must be fixed at some point.
