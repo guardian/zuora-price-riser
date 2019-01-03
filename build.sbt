@@ -9,7 +9,8 @@ lazy val root = (project in file(".")).
     )),
     name := "zuora-price-riser",
     libraryDependencies ++= Seq(
-      scalaTest,
+      scalaTest % Test,
+      scalatic,
       csvJoda,
       csvGeneric,
       scalajHttp,

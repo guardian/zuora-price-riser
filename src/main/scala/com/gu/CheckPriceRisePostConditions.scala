@@ -2,7 +2,8 @@ package com.gu
 
 import com.gu.FileImporter.PriceRise
 import org.joda.time.LocalDate
-
+import org.scalactic.Tolerance._
+import org.scalactic.TripleEquals._
 import scala.util.Try
 
 trait PriceRisePostCondition
@@ -63,12 +64,7 @@ object CheckPriceRisePostConditions {
       PriceHasBeenRaised -> Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.head.price.get == priceRise.newPrice).getOrElse(false),
       DeliveryCountryDidNotChange -> (accountBefore.soldToContact.country == accountAfter.soldToContact.country),
       PriceShouldNotChangeOnSubsequentRenewals -> Try(newGuardianWeeklyRatePlans.head.ratePlanCharges.head.priceChangeOption == "NoChange").getOrElse(false),
-      InvoiceShouldHaveTheNewPrice -> {
-        import org.scalactic.TolerantNumerics
-        import org.scalactic.TripleEquals._
-        implicit val floatEq = TolerantNumerics.tolerantFloatEquality(0.01f)
-        BillingPreview(accountAfter, invoiceItem) === priceRise.newPrice
-      },
+      InvoiceShouldHaveTheNewPrice -> (BillingPreview(accountAfter, invoiceItem) === priceRise.newPrice +- 0.01f),
       InvoiceStartDateShouldBeOnThePriceRiseDate -> invoiceItem.serviceStartDate.isEqual(priceRise.priceRiseDate),
     ).partition(_._2)
 
