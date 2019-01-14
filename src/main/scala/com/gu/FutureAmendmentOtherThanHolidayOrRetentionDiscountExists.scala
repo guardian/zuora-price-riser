@@ -2,9 +2,6 @@ package com.gu
 
 import com.gu.FileImporter.PriceRise
 
-/**
-  * Return list of rate plans on or after price rise date.
-  */
 object FutureAmendmentOtherThanHolidayOrRetentionDiscountExists {
   def apply(
       subscription: Subscription,
