@@ -22,7 +22,7 @@ object Skip {
       OneOff -> (!subscriptionBefore.autoRenew),
       Cancelled -> (subscriptionBefore.status == "Cancelled"),
       PriceRiseApplied -> PriceRiseAlreadyApplied(subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue),
-      FutureAmendmentExists -> FutureAmendmentsOnOrAfterPriceRiseDate(subscriptionBefore, priceRise).nonEmpty
+      FutureAmendmentExists -> FutureAmendmentOtherThanHolidayOrRetentionDiscountExists(subscriptionBefore, priceRise)
     ).partition(_._2)
 
     satisfied.map(_._1)
