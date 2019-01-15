@@ -26,7 +26,8 @@ case class RatePlan(
   lastChangeType: Option[String],
   productRatePlanId: String,
   ratePlanName: String,
-  ratePlanCharges: List[RatePlanCharge]
+  ratePlanCharges: List[RatePlanCharge],
+  productName: String
 )
 
 case class Subscription(
