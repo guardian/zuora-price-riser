@@ -21,17 +21,6 @@ object FileImporter {
   type guardian_weekly_new_price = Float
   type term_end_date = Option[LocalDate]
 
-  type Row =
-    (
-      subscription_name,
-        campaign_name,
-        date_letter_sent,
-        price_rise_date,
-        current_price_today,
-        guardian_weekly_new_price,
-        term_end_date
-      )
-
   case class PriceRise(
     subscriptionName: subscription_name,
     campaignName: campaign_name,
