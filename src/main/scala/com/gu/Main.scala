@@ -1,7 +1,9 @@
 package com.gu
 
 import com.typesafe.scalalogging.LazyLogging
+
 import scala.io.StdIn
+import scala.util.Try
 
 /**
   * The script will stop on the first error it encounters.
@@ -11,7 +13,7 @@ object Main extends App with LazyLogging {
   if (args.length == 0)
     Abort("Please provide import filename")
   val filename = args(0)
-
+  val resumeSubscriptionNameOpt = Try(args(1)).toOption
   val csvImport = FileImporter.importCsv(filename)
 
   if (Config.Zuora.stage == "PROD") {
@@ -28,7 +30,7 @@ object Main extends App with LazyLogging {
   var successfullyAppliedCount = 0
 
   logger.info(s"Start processing $importSize records from $filename...")
-  csvImport.foreach {
+  ResumeProcessing(csvImport, resumeSubscriptionNameOpt).foreach {
     case Left(importError) =>
       Abort(s"Bad import file: $importError")
 
