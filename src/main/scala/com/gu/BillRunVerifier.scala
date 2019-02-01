@@ -16,6 +16,7 @@ object BillRunVerifier extends App with LazyLogging {
   val billRunImport = BillRunFileImporter.importCsv(billRunFilename)
 
   var verified = true
+  var priceRiseApplied = 0
 
   logger.info(s"Start verifying bill run $billRunFilename against $priceRiseFilename...")
   csvImport.foreach {
@@ -28,6 +29,7 @@ object BillRunVerifier extends App with LazyLogging {
         .foreach { invoice =>
           if (invoice.InvoiceTotalAmount == priceRise.newPrice && invoice.invoiceDate.isEqual(priceRise.priceRiseDate)) {
             //            logger.info(s"$invoice === $priceRise")
+            priceRiseApplied = 1 + priceRiseApplied
           }
           else {
             verified = false
@@ -37,6 +39,7 @@ object BillRunVerifier extends App with LazyLogging {
   }
 
   logger.info(s"Finished verifying bill run $billRunFilename against $priceRiseFilename")
+  logger.info(s"Price rise applied count = $priceRiseApplied (${math.floor((priceRiseApplied.toFloat * 100) / csvImport.size)}%)")
   if (verified)
     logger.info(Console.GREEN + s"All OK.")
 }

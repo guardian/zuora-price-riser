@@ -8,6 +8,8 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.write
 
+import scala.annotation.tailrec
+
 case class RatePlanCharge(
   id: String,
   productRatePlanChargeId: String,
@@ -146,7 +148,7 @@ object ZuoraClient extends ZuoraJsonFormats {
   object HttpWithLongTimeout extends BaseHttp(
     options = Seq(
       HttpOptions.connTimeout(5000),
-      HttpOptions.readTimeout(20000),
+      HttpOptions.readTimeout(30000),
       HttpOptions.followRedirects(false)
     )
   )
@@ -261,25 +263,40 @@ object ZuoraClient extends ZuoraJsonFormats {
     }
   }
 
+  // https://stackoverflow.com/a/7931459/5205022
+  @tailrec
+  def retry[T](n: Int)(fn: => T): T = {
+    util.Try { fn } match {
+      case util.Success(x) => x
+      case _ if n > 1 => retry(n - 1)(fn)
+      case util.Failure(e) => throw e
+    }
+  }
+
   def newGuardianWeeklyInvoicePreview(
     account: Account,
     priceRise: PriceRise,
   ): InvoiceItem = {
-    val body = BillingPreviewBody(account.basicInfo.id, priceRise.priceRiseDate)
-    val response = HttpWithLongTimeout(s"$host/v1/operations/billing-preview")
-      .header("Authorization", s"Bearer $accessToken")
-      .header("content-type", "application/json")
-      .postData(write(body))
-      .method("POST")
-      .asString
 
-    response.code match {
-      case 200 => (parse(response.body) \ "invoiceItems").extract[List[InvoiceItem]].filter(_.productName != "Discounts") match {
-        case List(singleInvoiceItem) => singleInvoiceItem
-        case _ => throw new RuntimeException(s"Expected to find a single invoice item after excluding Discounts, but got $body: $response")
+    def newGuardianWeeklyInvoicePreviewImpl(): InvoiceItem = {
+      val body = BillingPreviewBody(account.basicInfo.id, priceRise.priceRiseDate)
+      val response = HttpWithLongTimeout(s"$host/v1/operations/billing-preview")
+        .header("Authorization", s"Bearer $accessToken")
+        .header("content-type", "application/json")
+        .postData(write(body))
+        .method("POST")
+        .asString
+
+      response.code match {
+        case 200 => (parse(response.body) \ "invoiceItems").extract[List[InvoiceItem]].filter(_.productName != "Discounts") match {
+          case List(singleInvoiceItem) => singleInvoiceItem
+          case _ => throw new RuntimeException(s"Expected to find a single invoice item after excluding Discounts, but got $body: $response")
+        }
+        case _ => throw new RuntimeException(s"${account.basicInfo.id} failed to get billing preview due to Zuora networking issue: $response")
       }
-      case _ => throw new RuntimeException(s"${account.basicInfo.id} failed to get billing preview due to Zuora networking issue: $response")
     }
+
+    retry[InvoiceItem](3)(newGuardianWeeklyInvoicePreviewImpl())
   }
 }
 
