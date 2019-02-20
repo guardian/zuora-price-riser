@@ -11,6 +11,7 @@ case object TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice extend
 case object TargetPriceRiseIsMoreThanTheCurrentPrice extends PriceRisePreCondition
 case object CurrentlyActiveProductRatePlanIsGuardianWeeklyRatePlan extends PriceRisePreCondition
 case object BillingPeriodIsQuarterlyOrAnnually extends PriceRisePreCondition
+case object SubscribedForAtLeast12MonthsBeforePriceRise extends PriceRisePreCondition
 
 /**
   * Check pre-conditions, before price rise is written to Zuora, by cross-referencing
@@ -39,6 +40,7 @@ object CheckPriceRisePreConditions {
       TargetPriceRiseIsMoreThanTheCurrentPrice -> (priceRise.newPrice > currentGuardianWeeklySubscription.price),
       CurrentlyActiveProductRatePlanIsGuardianWeeklyRatePlan -> Config.Zuora.Old.guardianWeeklyProductRatePlanIds.contains(currentGuardianWeeklySubscription.productRatePlanId),
       BillingPeriodIsQuarterlyOrAnnually -> List("Annual", "Quarter").contains(currentGuardianWeeklySubscription.billingPeriod),
+      SubscribedForAtLeast12MonthsBeforePriceRise -> AtLeastOneYearPassed(subscription.customerAcceptanceDate, priceRise.priceRiseDate)
     ).partition(_._2)
 
     unsatisfied.map(_._1)
