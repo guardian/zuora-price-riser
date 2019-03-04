@@ -5,7 +5,7 @@ import com.gu.FileImporter.PriceRise
 trait PriceRisePreCondition
 case object SubscriptionIsAutoRenewable extends PriceRisePreCondition
 case object SubscriptionIsActive extends PriceRisePreCondition
-case object PriceRiseDateIsOnInvoicedPeriodEndDate extends PriceRisePreCondition
+case object PriceRiseDateIsOnProjectedPaymentDay extends PriceRisePreCondition
 case object TargetPriceRiseIsNotMoreThanTheCap extends PriceRisePreCondition
 case object TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice extends PriceRisePreCondition
 case object TargetPriceRiseIsMoreThanTheCurrentPrice extends PriceRisePreCondition
@@ -34,7 +34,11 @@ object CheckPriceRisePreConditions {
     val (_, unsatisfied) = List[(PriceRisePreCondition, Boolean)](
       SubscriptionIsAutoRenewable -> subscription.autoRenew,
       SubscriptionIsActive -> (subscription.status == "Active"),
-      PriceRiseDateIsOnInvoicedPeriodEndDate -> currentGuardianWeeklySubscription.invoicedPeriod.endDateExcluding.isEqual(priceRise.priceRiseDate),
+      PriceRiseDateIsOnProjectedPaymentDay -> PriceRiseFallsOnAcceptableDay(
+        priceRise.priceRiseDate,
+        currentGuardianWeeklySubscription.invoicedPeriod.endDateExcluding,
+        currentGuardianWeeklySubscription.billingPeriod
+      ),
       TargetPriceRiseIsNotMoreThanTheCap -> (priceRise.newPrice < currentGuardianWeeklySubscription.price * Config.priceRiseFactorCap),
       TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice -> (priceRise.newPrice <= CatalogPriceExceptNZ(futureGuardianWeeklyProducts, currentGuardianWeeklySubscription)),
       TargetPriceRiseIsMoreThanTheCurrentPrice -> (priceRise.newPrice > currentGuardianWeeklySubscription.price),
