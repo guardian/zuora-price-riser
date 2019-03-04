@@ -54,9 +54,10 @@ object Main extends App with LazyLogging {
       else {
         val currentSubscription = CurrentGuardianWeeklySubscription(subscriptionBefore, accountBefore)
         val priceRiseRequest = PriceRiseRequestBuilder(subscriptionBefore, currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
+        val projectedInvoiceItems = ZuoraClient.guardianWeeklyInvoicePreview(accountBefore)
 
         val unsatisfiedPreConditions =
-          CheckPriceRisePreConditions(priceRise, subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue
+          CheckPriceRisePreConditions(priceRise, subscriptionBefore, accountBefore, projectedInvoiceItems, newGuardianWeeklyProductCatalogue
           ) ++ CheckPriceRiseRequestPreConditions(priceRiseRequest, currentSubscription)
 
         if(unsatisfiedPreConditions.nonEmpty) {
@@ -77,7 +78,10 @@ object Main extends App with LazyLogging {
             Abort(s"Failed price rise request for ${priceRise.subscriptionName}: $priceRiseResponse")
           val subscriptionAfter = ZuoraClient.getSubscription(priceRise.subscriptionName)
           val accountAfter = ZuoraClient.getAccount(subscriptionBefore.accountNumber)
-          val invoiceItem = ZuoraClient.newGuardianWeeklyInvoicePreview(accountAfter, priceRise)
+          val invoiceItem = ZuoraClient.guardianWeeklyInvoicePreview(accountAfter, priceRise.priceRiseDate).filter(_.serviceStartDate == priceRise.priceRiseDate) match {
+            case List(singleInvoiceItem) => singleInvoiceItem
+            case invoiceItems => throw new RuntimeException(s"Expected to find a single invoice item after excluding Discounts, but got $invoiceItems")
+          }
           val unsatisfiedPostConditions = CheckPriceRisePostConditions(subscriptionAfter, accountBefore, accountAfter, newGuardianWeeklyProductCatalogue, priceRise, currentSubscription, invoiceItem)
           if (unsatisfiedPostConditions.nonEmpty)
             Abort(s"${priceRise.subscriptionName} failed because of unsatisfied post-conditions: $unsatisfiedPostConditions")

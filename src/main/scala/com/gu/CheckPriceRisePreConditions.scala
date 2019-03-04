@@ -19,12 +19,12 @@ case object SubscribedForAtLeast12MonthsBeforePriceRise extends PriceRisePreCond
   */
 object CheckPriceRisePreConditions {
   type UnsatisfiedPriceRisePreConditions = List[PriceRisePreCondition]
-  import Config.Zuora._
 
   def apply(
       priceRise: PriceRise,
       subscription: Subscription,
       account: Account,
+      projectedInvoiceItemsBeforePriceRise: List[InvoiceItem],
       newGuardianWeeklyProductCatalogue: NewGuardianWeeklyProductCatalogue
   ): UnsatisfiedPriceRisePreConditions = {
 
@@ -34,11 +34,7 @@ object CheckPriceRisePreConditions {
     val (_, unsatisfied) = List[(PriceRisePreCondition, Boolean)](
       SubscriptionIsAutoRenewable -> subscription.autoRenew,
       SubscriptionIsActive -> (subscription.status == "Active"),
-      PriceRiseDateIsOnProjectedPaymentDay -> PriceRiseFallsOnAcceptableDay(
-        priceRise.priceRiseDate,
-        currentGuardianWeeklySubscription.invoicedPeriod.endDateExcluding,
-        currentGuardianWeeklySubscription.billingPeriod
-      ),
+      PriceRiseDateIsOnProjectedPaymentDay -> PriceRiseFallsOnAcceptableDay(priceRise.priceRiseDate, projectedInvoiceItemsBeforePriceRise),
       TargetPriceRiseIsNotMoreThanTheCap -> (priceRise.newPrice < currentGuardianWeeklySubscription.price * Config.priceRiseFactorCap),
       TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice -> (priceRise.newPrice <= CatalogPriceExceptNZ(futureGuardianWeeklyProducts, currentGuardianWeeklySubscription)),
       TargetPriceRiseIsMoreThanTheCurrentPrice -> (priceRise.newPrice > currentGuardianWeeklySubscription.price),
