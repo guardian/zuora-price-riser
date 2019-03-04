@@ -43,9 +43,10 @@ object DryRunner extends App with LazyLogging {
       else {
         val currentSubscription = CurrentGuardianWeeklySubscription(subscriptionBefore, accountBefore)
         val priceRiseRequest = PriceRiseRequestBuilder(subscriptionBefore, currentSubscription, newGuardianWeeklyProductCatalogue, priceRise)
+        val projectedInvoiceItems = ZuoraClient.guardianWeeklyInvoicePreview(accountBefore)
 
         val unsatisfiedPreConditions =
-          CheckPriceRisePreConditions(priceRise, subscriptionBefore, accountBefore, newGuardianWeeklyProductCatalogue
+          CheckPriceRisePreConditions(priceRise, subscriptionBefore, accountBefore, projectedInvoiceItems, newGuardianWeeklyProductCatalogue
           ) ++ CheckPriceRiseRequestPreConditions(priceRiseRequest, currentSubscription)
 
         if(unsatisfiedPreConditions.nonEmpty) {

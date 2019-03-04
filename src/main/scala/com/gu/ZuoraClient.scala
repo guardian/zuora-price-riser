@@ -273,13 +273,13 @@ object ZuoraClient extends ZuoraJsonFormats {
     }
   }
 
-  def newGuardianWeeklyInvoicePreview(
+  def guardianWeeklyInvoicePreview(
     account: Account,
-    priceRise: PriceRise,
-  ): InvoiceItem = {
+    previewDate: LocalDate = LocalDate.now().plusYears(2),
+  ): List[InvoiceItem] = {
 
-    def newGuardianWeeklyInvoicePreviewImpl(): InvoiceItem = {
-      val body = BillingPreviewBody(account.basicInfo.id, priceRise.priceRiseDate)
+    def guardianWeeklyInvoicePreviewImpl(): List[InvoiceItem] = {
+      val body = BillingPreviewBody(account.basicInfo.id, previewDate)
       val response = HttpWithLongTimeout(s"$host/v1/operations/billing-preview")
         .header("Authorization", s"Bearer $accessToken")
         .header("content-type", "application/json")
@@ -288,15 +288,12 @@ object ZuoraClient extends ZuoraJsonFormats {
         .asString
 
       response.code match {
-        case 200 => (parse(response.body) \ "invoiceItems").extract[List[InvoiceItem]].filter(_.productName != "Discounts") match {
-          case List(singleInvoiceItem) => singleInvoiceItem
-          case _ => throw new RuntimeException(s"Expected to find a single invoice item after excluding Discounts, but got $body: $response")
-        }
+        case 200 => (parse(response.body) \ "invoiceItems").extract[List[InvoiceItem]].filter(_.productName != "Discounts")
         case _ => throw new RuntimeException(s"${account.basicInfo.id} failed to get billing preview due to Zuora networking issue: $response")
       }
     }
 
-    retry[InvoiceItem](3)(newGuardianWeeklyInvoicePreviewImpl())
+    retry[List[InvoiceItem]](3)(guardianWeeklyInvoicePreviewImpl())
   }
 }
 
