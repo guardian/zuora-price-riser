@@ -16,7 +16,7 @@ class NewGuardianWeeklySubscriptionSpec extends FlatSpec with Matchers with Zuor
   val accountBefore = parse(Source.fromURL(getClass.getResource("/current-subscription-account.json")).mkString).extract[Account]
   val accountAfter = accountBefore
   val newGuardianWeeklyProductCatalogue = Config.Zuora.New.guardianWeeklyProductCatalogue
-  val priceRise = PriceRise("A-S00045676", "", "", LocalDate.parse("2019-07-27", zuoraDateFormat), 312.0f, 390.0f, None)
+  val priceRise = PriceRise("A-S00045676", "", LocalDate.parse("2019-01-14", zuoraDateFormat), LocalDate.parse("2019-07-27", zuoraDateFormat), 312.0f, 390.0f, None)
   val currentSubscription = CurrentGuardianWeeklySubscription(subscriptionBefore, accountBefore)
   val invoiceItem = InvoiceItem("", "", LocalDate.parse("2019-07-27", zuoraDateFormat), LocalDate.parse("2019-07-27", zuoraDateFormat), (390 / 1.1).toFloat, "", "")
 

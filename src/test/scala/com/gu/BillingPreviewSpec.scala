@@ -130,7 +130,7 @@ class BillingPreviewSpec extends FlatSpec with Matchers with ZuoraJsonFormats {
 
   "BillingPreview" should "calculate tax for countries with states" in {
     val zuoraDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
-    val priceRise = PriceRise("11111", "", "", LocalDate.parse("2019-01-14", zuoraDateFormat), 60.0f, 80.0f, None)
+    val priceRise = PriceRise("11111", "", LocalDate.parse("2019-01-14", zuoraDateFormat), LocalDate.parse("2019-01-14", zuoraDateFormat), 60.0f, 80.0f, None)
     BillingPreview(
       parse(rawAccount).extract[Account],
       parse(rawInvoiceItem).extract[InvoiceItem]
@@ -139,7 +139,7 @@ class BillingPreviewSpec extends FlatSpec with Matchers with ZuoraJsonFormats {
 
   it should "calculate tax for countries where rounding is not precise (Canada, Nova Scotia)" in {
     val zuoraDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
-    val priceRise = PriceRise("11111", "", "", LocalDate.parse("2019-01-14", zuoraDateFormat), 60.0f, 80.0f, None)
+    val priceRise = PriceRise("11111", "", LocalDate.parse("2019-01-14", zuoraDateFormat), LocalDate.parse("2019-01-14", zuoraDateFormat), 60.0f, 80.0f, None)
     val account = parse(rawAccount).extract[Account]
     val accountCanNovaScotia = account.copy(soldToContact = account.soldToContact.copy(country = "Canada", state = "Nova Scotia"))
 
@@ -154,7 +154,7 @@ class BillingPreviewSpec extends FlatSpec with Matchers with ZuoraJsonFormats {
     val zuoraDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
     val newPrice = 76.19f * (1 + 0.07f)
     val newPriceRounded = (math rint newPrice * 100) / 100
-    val priceRise = PriceRise("11111", "", "", LocalDate.parse("2019-01-14", zuoraDateFormat), 60.0f, newPriceRounded.toFloat, None)
+    val priceRise = PriceRise("11111", "", LocalDate.parse("2019-01-14", zuoraDateFormat), LocalDate.parse("2019-01-14", zuoraDateFormat), 60.0f, newPriceRounded.toFloat, None)
     val account = parse(rawAccount).extract[Account]
     val accountGermanyNoState = account.copy(soldToContact = account.soldToContact.copy(country = "Germany", state = ""))
 
@@ -166,7 +166,7 @@ class BillingPreviewSpec extends FlatSpec with Matchers with ZuoraJsonFormats {
 
   it should "not apply tax for countries without tax" in {
     val zuoraDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
-    val priceRise = PriceRise("11111", "", "", LocalDate.parse("2019-01-14", zuoraDateFormat), 60.0f, 76.19f, None)
+    val priceRise = PriceRise("11111", "", LocalDate.parse("2019-01-14", zuoraDateFormat), LocalDate.parse("2019-01-14", zuoraDateFormat), 60.0f, 76.19f, None)
     val account = parse(rawAccount).extract[Account]
     val accountLatviaNoTax = account.copy(soldToContact = account.soldToContact.copy(country = "Latvia", state = ""))
 
