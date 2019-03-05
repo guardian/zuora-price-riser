@@ -1,6 +1,9 @@
 package com.gu
 
+import com.gu.Main.{args, csvImport, resumeSubscriptionNameOpt}
 import com.typesafe.scalalogging.LazyLogging
+
+import scala.util.Try
 
 /**
   * Check pre-conditions for all import records, and outputs stats on failed conditions.
@@ -10,7 +13,7 @@ object DryRunner extends App with LazyLogging {
   if (args.length == 0)
     Abort("Please provide import filename")
   val filename = args(0)
-
+  val resumeSubscriptionNameOpt = Try(args(1)).toOption
   val csvImport = FileImporter.importCsv(filename)
 
   val importSize = csvImport.size
@@ -20,7 +23,7 @@ object DryRunner extends App with LazyLogging {
   var readyToApplyCount = 0 // pre-conditions passed
 
   logger.info(s"Start dry run processing $importSize records from $filename...")
-  csvImport.foreach {
+  ResumeProcessing(csvImport, resumeSubscriptionNameOpt).foreach {
     case Left(importError) =>
       Abort(s"Bad import file: $importError")
 
