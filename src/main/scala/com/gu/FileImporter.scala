@@ -32,7 +32,7 @@ object FileImporter extends LazyLogging {
     termEndDate: term_end_date
   ) {
     def logOutputRow(autoRenew: Boolean, skipReasons: List[SkipReason]) = {
-      val priceRiseOutputCsvRow = s"$subscriptionName,$campaignName,$dateLetterSent,$priceRiseDate,${_unsafeCurrentPrice},$newPrice,${termEndDate.getOrElse("")},${autoRenew}"
+      val priceRiseOutputCsvRow = s"$subscriptionName,$campaignName,$priceRiseDate,${_unsafeCurrentPrice},$newPrice,${termEndDate.getOrElse("")},${autoRenew}"
       skipReasons match {
         case list if list.contains(PriceRiseApplied) => logger.info(s"PRICE RISE APPLIED:$priceRiseOutputCsvRow")
         case list if list.contains(OneOff) => logger.info(s"ONE-OFF:$priceRiseOutputCsvRow")
