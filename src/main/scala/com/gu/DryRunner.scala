@@ -39,12 +39,7 @@ object DryRunner extends App with LazyLogging {
       if (skipReasons.nonEmpty) {
         skipReasonsCount = skipReasonsCount ++ skipReasons
         logger.info(s"${subscriptionBefore.subscriptionNumber} skipped because $skipReasons")
-        skipReasons match {
-          case list if list.contains(PriceRiseApplied) => logger.info(s"PRICE RISE APPLIED:${priceRise.csvRow(subscriptionBefore.autoRenew)}")
-          case list if list.contains(OneOff) => logger.info(s"ONE-OFF:${priceRise.csvRow(subscriptionBefore.autoRenew)}")
-          case list if list.contains(Cancelled) => logger.info(s"CANCELLED:${priceRise.csvRow(subscriptionBefore.autoRenew)}")
-          case _ => logger.error(s"Unexpected skip reason detected:${priceRise.csvRow(subscriptionBefore.autoRenew)}")
-        }
+        priceRise.logOutputRow(subscriptionBefore.autoRenew, skipReasons)
       }
       else {
         val currentSubscription = CurrentGuardianWeeklySubscription(subscriptionBefore, accountBefore)

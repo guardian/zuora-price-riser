@@ -6,10 +6,11 @@ import kantan.csv.generic._
 import kantan.csv.joda.time._
 import java.io.File
 
+import com.typesafe.scalalogging.LazyLogging
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 
-object FileImporter {
+object FileImporter extends LazyLogging {
   val format = DateTimeFormat.forPattern("dd/MM/yyyy")
   implicit val decoder: CellDecoder[LocalDate] = localDateDecoder(format)
 
@@ -30,7 +31,16 @@ object FileImporter {
     newPrice: guardian_weekly_new_price,
     termEndDate: term_end_date
   ) {
-    def csvRow(autoRenew: Boolean) = s"$subscriptionName,$campaignName,$dateLetterSent,$priceRiseDate,${_unsafeCurrentPrice},$newPrice,${termEndDate.getOrElse("")},${autoRenew}"
+    def logOutputRow(autoRenew: Boolean, skipReasons: List[SkipReason]) = {
+      val priceRiseOutputCsvRow = s"$subscriptionName,$campaignName,$dateLetterSent,$priceRiseDate,${_unsafeCurrentPrice},$newPrice,${termEndDate.getOrElse("")},${autoRenew}"
+      skipReasons match {
+        case list if list.contains(PriceRiseApplied) => logger.info(s"PRICE RISE APPLIED:$priceRiseOutputCsvRow")
+        case list if list.contains(OneOff) => logger.info(s"ONE-OFF:$priceRiseOutputCsvRow")
+        case list if list.contains(Cancelled) => logger.info(s"CANCELLED:$priceRiseOutputCsvRow")
+        case _ => logger.error(s"Unexpected skip reason detected:$priceRiseOutputCsvRow")
+      }
+    }
+
   }
 
   def importCsv(filename: String = "subs.csv"): List[ReadResult[PriceRise]] =
