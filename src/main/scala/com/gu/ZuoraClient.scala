@@ -1,6 +1,6 @@
 package com.gu
 
-import com.gu.FileImporter.PriceRise
+import com.typesafe.scalalogging.LazyLogging
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import scalaj.http.{BaseHttp, Http, HttpOptions}
@@ -111,6 +111,11 @@ case class PriceRiseResponse(
   reasons: Option[List[Reason]]
 )
 
+case class InvoicePreviewResponse(
+  success: Boolean,
+  invoiceItems: List[InvoiceItem]
+)
+
 case class InvoiceItem(
   id: String,
   subscriptionNumber: String,
@@ -141,7 +146,7 @@ trait ZuoraJsonFormats {
   implicit val codec = DefaultFormats ++ List(LocalDateSerializer)
 }
 
-object ZuoraClient extends ZuoraJsonFormats {
+object ZuoraClient extends ZuoraJsonFormats with LazyLogging {
   import ZuoraOauth._
   import ZuoraHostSelector._
 
@@ -228,17 +233,23 @@ object ZuoraClient extends ZuoraJsonFormats {
   def removeAndAddAProductRatePlan(
       subscriptionName: String,
       body: PriceRiseRequest): PriceRiseResponse = {
-    val response = HttpWithLongTimeout(s"$host/v1/subscriptions/$subscriptionName")
-      .header("Authorization", s"Bearer $accessToken")
-      .header("content-type", "application/json")
-      .postData(write(body))
-      .method("PUT")
-      .asString
 
-    response.code match {
-      case 200 => parse(response.body).extract[PriceRiseResponse]
-      case _ => throw new RuntimeException(s"$subscriptionName failed to raise price due to Zuora networking issue: $response")
+    def removeAndAddAProductRatePlanImpl() = {
+      val response = HttpWithLongTimeout(s"$host/v1/subscriptions/$subscriptionName")
+        .header("Authorization", s"Bearer $accessToken")
+        .header("content-type", "application/json")
+        .postData(write(body))
+        .method("PUT")
+        .asString
+
+      response.code match {
+        case 200 if parse(response.body).extract[PriceRiseResponse].success => parse(response.body).extract[PriceRiseResponse]
+        case _ => throw new RuntimeException(s"$subscriptionName failed to raise price due to Zuora networking issue: $response")
+      }
     }
+
+    retry[PriceRiseResponse](3)(removeAndAddAProductRatePlanImpl())
+
   }
 
   case class ExtendTerm(
@@ -268,14 +279,17 @@ object ZuoraClient extends ZuoraJsonFormats {
   def retry[T](n: Int)(fn: => T): T = {
     util.Try { fn } match {
       case util.Success(x) => x
-      case _ if n > 1 => retry(n - 1)(fn)
+      case _ if n > 1 => {
+        logger.warn(s"Retrying operation due to failure from Zuora")
+        retry(n - 1)(fn)
+      }
       case util.Failure(e) => throw e
     }
   }
 
   def guardianWeeklyInvoicePreview(
     account: Account,
-    previewDate: LocalDate = LocalDate.now().plusYears(2),
+    previewDate: LocalDate = LocalDate.now().plusMonths(13),
   ): List[InvoiceItem] = {
 
     def guardianWeeklyInvoicePreviewImpl(): List[InvoiceItem] = {
@@ -288,7 +302,9 @@ object ZuoraClient extends ZuoraJsonFormats {
         .asString
 
       response.code match {
-        case 200 => (parse(response.body) \ "invoiceItems").extract[List[InvoiceItem]].filter(_.productName != "Discounts")
+        case 200 if parse(response.body).extract[InvoicePreviewResponse].success =>
+          parse(response.body).extract[InvoicePreviewResponse]
+          .invoiceItems.filter(_.productName != "Discounts")
         case _ => throw new RuntimeException(s"${account.basicInfo.id} failed to get billing preview due to Zuora networking issue: $response")
       }
     }
