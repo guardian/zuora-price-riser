@@ -1,6 +1,8 @@
 package com.gu
 
 import com.gu.FileImporter.PriceRise
+import org.joda.time.LocalDate
+import org.joda.time.format.DateTimeFormat
 
 trait PriceRisePreCondition
 case object SubscriptionIsAutoRenewable extends PriceRisePreCondition
@@ -12,6 +14,7 @@ case object TargetPriceRiseIsMoreThanTheCurrentPrice extends PriceRisePreConditi
 case object CurrentlyActiveProductRatePlanIsGuardianWeeklyRatePlan extends PriceRisePreCondition
 case object BillingPeriodIsQuarterlyOrAnnually extends PriceRisePreCondition
 case object SubscribedForAtLeast12MonthsBeforePriceRise extends PriceRisePreCondition
+case object ThereIsStillTimeToPostALetter extends PriceRisePreCondition
 
 /**
   * Check pre-conditions, before price rise is written to Zuora, by cross-referencing
@@ -34,6 +37,7 @@ object CheckPriceRisePreConditions {
     val (_, unsatisfied) = List[(PriceRisePreCondition, Boolean)](
       SubscriptionIsAutoRenewable -> subscription.autoRenew,
       SubscriptionIsActive -> (subscription.status == "Active"),
+      ThereIsStillTimeToPostALetter -> priceRise.priceRiseDate.isAfter(LocalDate.parse("2019-05-12", DateTimeFormat.forPattern("yyyy-MM-dd"))),
       PriceRiseDateIsOnProjectedPaymentDay -> PriceRiseFallsOnAcceptableDay(priceRise.priceRiseDate, projectedInvoiceItemsBeforePriceRise),
       TargetPriceRiseIsNotMoreThanTheCap -> (priceRise.newPrice < currentGuardianWeeklySubscription.price * Config.priceRiseFactorCap),
       TargetPriceRiseIsNotMoreThanDefaultProductRatePlanChargePrice -> (priceRise.newPrice <= CatalogPriceExceptNZ(futureGuardianWeeklyProducts, currentGuardianWeeklySubscription)),
