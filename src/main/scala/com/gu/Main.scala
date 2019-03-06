@@ -68,7 +68,7 @@ object Main extends App with LazyLogging {
           // **********************************************************************************************
           // 3. MUTATE
           // **********************************************************************************************
-          ExtendTermRequestBuilder(subscriptionBefore, currentSubscription).map(extendTerm => ZuoraClient.extendTerm(priceRise.subscriptionName, extendTerm))
+          ExtendTermRequestBuilder(subscriptionBefore, priceRise.priceRiseDate).map(extendTerm => ZuoraClient.extendTerm(priceRise.subscriptionName, extendTerm))
           val priceRiseResponse = ZuoraClient.removeAndAddAProductRatePlan(priceRise.subscriptionName, priceRiseRequest)
 
           // **********************************************************************************************
