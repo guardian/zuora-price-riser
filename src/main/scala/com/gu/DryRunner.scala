@@ -61,7 +61,7 @@ object DryRunner extends App with LazyLogging {
           readyToApplyCount = readyToApplyCount + 1
           logger.info(s"${subscriptionBefore.subscriptionNumber} ready to apply")
 
-          if (ExtendTermRequestBuilder(subscriptionBefore, currentSubscription).isDefined)
+          if (ExtendTermRequestBuilder(subscriptionBefore, priceRise.priceRiseDate).isDefined)
             termExtensionCount = termExtensionCount + 1
         }
       }
