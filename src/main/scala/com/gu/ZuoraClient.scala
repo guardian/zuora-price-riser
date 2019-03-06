@@ -280,7 +280,7 @@ object ZuoraClient extends ZuoraJsonFormats with LazyLogging {
     util.Try { fn } match {
       case util.Success(x) => x
       case _ if n > 1 => {
-        logger.info(s"Retrying operation due to failure from Zuora")
+        logger.warn(s"Retrying operation due to failure from Zuora")
         retry(n - 1)(fn)
       }
       case util.Failure(e) => throw e
